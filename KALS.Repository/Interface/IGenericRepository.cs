@@ -27,7 +27,7 @@ public interface IGenericRepository<T>: IDisposable where T : class
         Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null,
         int page = 1,
         int size = 10,
-        string? sortBy = null,
+        string sortBy = null,
         bool isAsc = true
     );
     Task<ICollection<T>> GetListAsync(
@@ -45,5 +45,6 @@ public interface IGenericRepository<T>: IDisposable where T : class
     void DeleteAsync(T entity);
     
     Task<bool> SaveChangesAsync();
+    
     
 }

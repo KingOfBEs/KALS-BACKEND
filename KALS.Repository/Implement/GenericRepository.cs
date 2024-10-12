@@ -1,10 +1,12 @@
 using System.Linq.Expressions;
+using System.Reflection;
 using KALS.Domain.DataAccess;
 using KALS.Domain.Filter;
 using KALS.Domain.Paginate;
 using KALS.Repository.Interface;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.IdentityModel.Tokens;
 
 namespace KALS.Repository.Implement;
 
@@ -51,30 +53,47 @@ public class GenericRepository<T>: IGenericRepository<T>, IAsyncDisposable where
         return query.AsNoTracking().Select(selector).FirstOrDefaultAsync();
     }
 
-    public Task<IPaginate<TResult>> GetPagingListAsync<TResult>(Expression<Func<T, TResult>>? selector, IFilter<T> filter, Expression<Func<T, bool>> predicate = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
-        Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, int page = 1, int size = 10, string? sortBy = null, bool isAsc = true)
+    public async Task<IPaginate<TResult>> GetPagingListAsync<TResult>(Expression<Func<T, TResult>> selector, IFilter<T> filter, Expression<Func<T, bool>> predicate = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+        Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, int page = 1, int size = 10, string sortBy = null, bool isAsc = true)
     {
-        IQueryable<T> query = _dbSet;
+        IQueryable<T> query = _dbSet.AsNoTracking();
         if (filter != null)
         {
             var filterExpression = filter.ToExpression();
             query = query.Where(filterExpression);
         }
-
-        if (!string.IsNullOrEmpty(sortBy))
-        {
-            var parameter = Expression.Parameter(typeof(T));
-            var property = Expression.Property(parameter, sortBy);
-            var lambda = Expression.Lambda(property, parameter);
-            
-            var methodName = isAsc ? "OrderBy" : "OrderByDescending";
-            var resultExpression = Expression.Call(typeof(Queryable), methodName, new[] {typeof(T), property.Type}, query.Expression, Expression.Quote(lambda));
-            query = query.Provider.CreateQuery<T>(resultExpression);
-        }
         if (include != null) query = include(query);
         if (predicate != null) query = query.Where(predicate);
-        if (orderBy != null) return orderBy(query).AsNoTracking().Select(selector).ToPaginateAsync(page, size, 1);
-        return query.AsNoTracking().Select(selector).ToPaginateAsync(page, size, 1);
+        if (!string.IsNullOrEmpty(sortBy))
+        {
+            query = ApplySort(query, sortBy, isAsc);
+        }
+        else if (orderBy != null)
+        {
+            query = orderBy(query);
+        }
+        
+        return await query.AsNoTracking().Select(selector).ToPaginateAsync(page, size, 1);
+      
+    }
+
+    private IQueryable<T> ApplySort(IQueryable<T> query, string sortBy, bool isAsc)
+    {
+        var parameter = Expression.Parameter(typeof(T), "x");
+        var property = typeof(T).GetProperty(sortBy, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+        if (property == null)
+        {
+            throw new ArgumentException($"Property '{sortBy}' not found on type {typeof(T).Name}");
+        }
+        var propertyAccess = Expression.Property(parameter, property);
+        var lambda = Expression.Lambda(propertyAccess, parameter);
+         
+        string methodName = isAsc ? "OrderBy" : "OrderByDescending";
+
+        var resultExpression = Expression.Call(typeof(Queryable), methodName, 
+                new Type[] {typeof(T), propertyAccess.Type},
+                query.Expression, Expression.Quote(lambda));
+        return query.Provider.CreateQuery<T>(resultExpression);
     }
 
     public async Task<ICollection<T>> GetListAsync(Expression<Func<T, bool>> predicate = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null)

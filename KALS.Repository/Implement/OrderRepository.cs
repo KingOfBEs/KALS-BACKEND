@@ -1,8 +1,10 @@
+using System.Linq.Expressions;
 using KALS.Domain.DataAccess;
 using KALS.Domain.Entities;
 using KALS.Domain.Filter;
 using KALS.Domain.Paginate;
 using KALS.Repository.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace KALS.Repository.Implement;
 
@@ -26,19 +28,23 @@ public class OrderRepository: GenericRepository<Order>, IOrderRepository
                 Total = o.Total,
                 Address = o.Address,
                 MemberId = o.MemberId,
-                PaymentId = o.PaymentId
+                PaymentId = o.PaymentId,
+                Code = o.Code
             },
             predicate: o => o.MemberId == memberId,
             page: page,
             size: size,
             filter: filter,
             sortBy: sortBy,
-            isAsc: isAsc
+            isAsc: isAsc,
+            include: o => o.Include(o => o.Member)
+                .Include(o => o.Payment)
         );
         return orders;
+        
     }
 
-    public async Task<IPaginate<Order>> GetOrdersPagingAsync(int page, int size, IFilter<Order> filter, string sortBy,
+    public async Task<IPaginate<Order>> GetOrdersPagingAsync(int page, int size, IFilter<Order>? filter, string? sortBy,
         bool isAsc)
     {
         var orders = await GetPagingListAsync(
@@ -51,13 +57,16 @@ public class OrderRepository: GenericRepository<Order>, IOrderRepository
                 Total = o.Total,
                 Address = o.Address,
                 MemberId = o.MemberId,
-                PaymentId = o.PaymentId
+                PaymentId = o.PaymentId,
+                Code = o.Code
             },
             page: page,
             size: size,
             filter: filter,
             sortBy: sortBy,
-            isAsc: isAsc
+            isAsc: isAsc,
+            include: o => o.Include(o => o.Member)
+                .Include(o => o.Payment)
         );
         return orders;
     }
