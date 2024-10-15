@@ -23,4 +23,6 @@ public class Member : BaseEntity
     
     
     public virtual ICollection<LabMember>? LabMembers { get; set; }
+    
+    public virtual ICollection<Order>? Orders { get; set; }
 }

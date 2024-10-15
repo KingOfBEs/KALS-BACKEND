@@ -1,6 +1,8 @@
 using KALS.API.Constant;
 using KALS.API.Models.SupportRequest;
 using KALS.API.Services.Interface;
+using KALS.Domain.Filter.FilterModel;
+using KALS.Domain.Paginate;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KALS.API.Controller;
@@ -40,6 +42,13 @@ public class SupportRequestController: BaseController<SupportRequestController>
             return Problem($"{MessageConstant.SupportRequest.ResponseSupportRequestFail}");
         }
         _logger.LogInformation($"Response support message successful with {response.Id}");
+        return Ok(response);
+    }
+    [HttpGet(ApiEndPointConstant.SupportRequest.SupportRequestEndPoint)]
+    [ProducesResponseType(typeof(IPaginate<SupportRequestResponse>), statusCode: StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetSupportRequestPagingAsync(int page = 1, int size = 30, [FromQuery] SupportRequestFilter? filter = null, string? sortBy = null, bool isAsc = true)
+    {
+        var response = await _supportRequestService.GetSupportRequestPagingAsync(page, size, filter, sortBy, isAsc);
         return Ok(response);
     }
 }

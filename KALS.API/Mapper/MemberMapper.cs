@@ -13,6 +13,5 @@ public class MemberMapper: Profile
             .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User.Username))
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber))
             .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName));
-        CreateMap(typeof(IPaginate<>), typeof(IPaginate<>)).ConvertUsing(typeof(PaginateConverter<,>));
     }
 }

@@ -20,7 +20,7 @@ public class StaffController: BaseController<StaffController>
     [HttpGet(ApiEndPointConstant.Staff.StaffEndpoint)]
     [ProducesResponseType(typeof(IPaginate<StaffResponse>), statusCode: StatusCodes.Status200OK)]
     public async Task<IActionResult> GetStaffsAsync([FromQuery] int page = 1, [FromQuery] int size = 30, 
-        [FromQuery] StaffFilter filter = null, [FromQuery] string sortBy = null, [FromQuery] bool isAsc = true)
+        [FromQuery] StaffFilter? filter = null, [FromQuery] string? sortBy = null, [FromQuery] bool isAsc = true)
     {
         var staffs = await _userService.GetStaffsAsync(page, size, filter, sortBy, isAsc);
         return Ok(staffs);

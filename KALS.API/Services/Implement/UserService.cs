@@ -154,7 +154,7 @@ public class UserService : BaseService<UserService>, IUserService
         return response;
     }
 
-    public async Task<IPaginate<MemberResponse>> GetMembersAsync(int page, int size, MemberFilter filter, string sortBy, bool isAsc)
+    public async Task<IPaginate<MemberResponse>> GetMembersAsync(int page, int size, MemberFilter? filter, string? sortBy, bool isAsc)
     {
         // var members = await _unitOfWork.GetRepository<Member>().GetPagingListAsync(
         //     selector: m => new MemberResponse()
@@ -201,7 +201,7 @@ public class UserService : BaseService<UserService>, IUserService
         return response;
     }
 
-    public async Task<IPaginate<StaffResponse>> GetStaffsAsync(int page, int size, StaffFilter filter, string sortBy, bool isAsc)
+    public async Task<IPaginate<StaffResponse>> GetStaffsAsync(int page, int size, StaffFilter? filter, string? sortBy, bool isAsc)
     {
         // var staffs = _unitOfWork.GetRepository<Staff>().GetPagingListAsync(
         //     selector: s => new StaffResponse()

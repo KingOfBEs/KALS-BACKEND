@@ -11,7 +11,8 @@ public class LabMapper: Profile
     public LabMapper()
     {
         CreateMap<CreateLabRequest, Lab>();
-        CreateMap<Lab, LabResponse>();
-        CreateMap(typeof(IPaginate<>), typeof(IPaginate<>)).ConvertUsing(typeof(PaginateConverter<,>));
+        CreateMap<Lab, LabResponse>()
+        .ForMember(dest => dest.ProductNames,
+            opt => opt.MapFrom(src => src.LabProducts!.Select(lp => lp.Product.Name).ToList()));
     }
 }

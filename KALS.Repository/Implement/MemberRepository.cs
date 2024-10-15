@@ -62,4 +62,15 @@ public class MemberRepository: GenericRepository<Member>, IMemberRepository
         );
         return member;
     }
+
+    public async Task<ICollection<Member>> GetMembersOrderProductAsync(Guid productId)
+    {
+        var members = await GetListAsync(
+            predicate: m => m.Orders!.Any(o => o.OrderItems.Any(oi => oi.ProductId == productId)),
+            include: m => m.Include(m => m.Orders)
+                .ThenInclude(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+        );
+        return members;
+    }
 }

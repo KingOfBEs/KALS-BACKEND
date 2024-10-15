@@ -12,4 +12,6 @@ public interface IMemberRepository: IGenericRepository<Member>
         bool isAsc);
     
     Task<Member> GetMemberById(Guid id);
+    
+    Task<ICollection<Member>> GetMembersOrderProductAsync(Guid productId);
 }

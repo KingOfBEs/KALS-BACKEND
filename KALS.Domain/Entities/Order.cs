@@ -21,4 +21,6 @@ public class Order: BaseEntity
     public Guid PaymentId { get; set; }
     [ForeignKey(nameof(PaymentId))]
     public Payment Payment { get; set; }
+    
+    public virtual ICollection<OrderItem> OrderItems { get; set; }
 }

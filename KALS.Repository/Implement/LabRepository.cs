@@ -41,11 +41,11 @@ public class LabRepository: GenericRepository<Lab>, ILabRepository
             page: page,
             size: size,
             orderBy: l => l.OrderByDescending(l => l.CreatedAt),
-            filter: null
-            // include: l => l.Include(l => l.LabMembers)
-            //     .ThenInclude(lm => lm.Member)
-            //     .Include(l => l.LabProducts)
-            //     .ThenInclude(lp => lp.Product)
+            filter: null,
+            include: l => l.Include(l => l.LabMembers)
+                .ThenInclude(lm => lm.Member)
+                .Include(l => l.LabProducts)
+                .ThenInclude(lp => lp.Product)
         );
         return labs;
     }
@@ -69,7 +69,11 @@ public class LabRepository: GenericRepository<Lab>, ILabRepository
             page: page,
             size: size,
             orderBy: l => l.OrderByDescending(l => l.CreatedAt),
-            filter: null
+            filter: null,
+            include: l => l.Include(l => l.LabProducts)
+                .ThenInclude(lp => lp.Product)
+                .Include(l => l.LabMembers)
+                .ThenInclude(lm => lm.Member)
         );
         return labs;
     }

@@ -22,7 +22,7 @@ public class MemberController: BaseController<MemberController>
     [HttpGet(ApiEndPointConstant.Member.MemberEndpoint)]
     [ProducesResponseType(typeof(IPaginate<MemberResponse>), statusCode: StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMembersAsync([FromQuery] int page = 1, [FromQuery] int size = 30, 
-        [FromQuery] MemberFilter filter = null, [FromQuery] string sortBy = null, [FromQuery] bool isAsc = true)
+        [FromQuery] MemberFilter? filter = null, [FromQuery] string? sortBy = null, [FromQuery] bool isAsc = true)
     {
         var members = await _userService.GetMembersAsync(page, size, filter, sortBy, isAsc);
         return Ok(members);

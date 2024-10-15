@@ -10,6 +10,5 @@ public class OrderMapper: Profile
     public OrderMapper()
     {
         CreateMap<Order, OrderResponse>();
-        // CreateMap(typeof(IPaginate<>), typeof(IPaginate<>)).ConvertUsing(typeof(PaginateConverter<,>));
     }
 }

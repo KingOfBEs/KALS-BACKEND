@@ -6,6 +6,8 @@ using KALS.API.Services.Interface;
 using KALS.API.Utils;
 using KALS.Domain.Entities;
 using KALS.Domain.Enums;
+using KALS.Domain.Filter.FilterModel;
+using KALS.Domain.Paginate;
 using KALS.Repository.Interface;
 using SupportRequest = KALS.Domain.Entities.SupportRequest;
 
@@ -136,5 +138,33 @@ public class SupportRequestService: BaseService<SupportRequestService>, ISupport
         }
         
 
+    }
+
+    public async Task<IPaginate<SupportRequestResponse>> GetSupportRequestPagingAsync(int page, int size, SupportRequestFilter? filter, string? sortBy, bool isAsc)
+    {
+        var roleString = GetRoleFromJwt();
+        if(roleString == null) throw new UnauthorizedAccessException(MessageConstant.User.RoleNotFound);
+        
+        var role = Enum.Parse<RoleEnum>(roleString);
+        IPaginate<SupportRequest> supportRequests;
+        switch (role)
+        {
+            case RoleEnum.Member:
+                var userId = GetUserIdFromJwt();
+                if (userId == Guid.Empty) throw new UnauthorizedAccessException(MessageConstant.User.UserNotFound);
+                var member = await _memberRepository.GetMemberByUserId(userId);
+                if (member == null) throw new UnauthorizedAccessException(MessageConstant.User.MemberNotFound);
+                
+                supportRequests = await _supportRequestRepository.GetSupportRequestPagingByMemberIdAsync(member.Id, page, size, filter, sortBy, isAsc);
+                break;
+            case RoleEnum.Staff:
+            case RoleEnum.Manager:
+                supportRequests = await _supportRequestRepository.GetSupportRequestPagingAsync(page, size, filter, sortBy, isAsc);
+                break;
+            default:
+                throw new BadHttpRequestException(MessageConstant.User.RoleNotFound);
+        }
+        var response = _mapper.Map<IPaginate<SupportRequestResponse>>(supportRequests);
+        return response;
     }
 }

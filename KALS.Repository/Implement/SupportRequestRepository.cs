@@ -1,7 +1,10 @@
 using KALS.Domain.DataAccess;
 using KALS.Domain.Entities;
 using KALS.Domain.Enums;
+using KALS.Domain.Filter.FilterModel;
+using KALS.Domain.Paginate;
 using KALS.Repository.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace KALS.Repository.Implement;
 
@@ -23,6 +26,67 @@ public class SupportRequestRepository: GenericRepository<SupportRequest>, ISuppo
     {
         var supportRequest = await SingleOrDefaultAsync(
             predicate: sr => sr.Id == id
+        );
+        return supportRequest;
+    }
+
+    public Task<IPaginate<SupportRequest>> GetSupportRequestPagingByMemberIdAsync(Guid memberId, int page, int size, SupportRequestFilter? filter,
+        string? sortBy, bool isAsc)
+    {
+        var supportRequest = GetPagingListAsync(
+            selector: sr => new SupportRequest()
+            {
+                Id = sr.Id,
+                MemberId = sr.MemberId,
+                Member = sr.Member,
+                Lab = sr.Lab,
+                Staff = sr.Staff,
+                Status = sr.Status,
+                CreatedAt = sr.CreatedAt,
+                LabId = sr.LabId,
+                LabMember = sr.LabMember,
+                ModifiedAt = sr.ModifiedAt,
+                StaffId = sr.StaffId,
+                SupportMessages = sr.SupportMessages
+            },
+            predicate: sr => sr.MemberId == memberId,
+            filter: filter,
+            sortBy: sortBy,
+            isAsc: isAsc,
+            page: page,
+            size: size,
+            include: sr => sr.Include(sr => sr.Member)
+                .Include(sr => sr.Lab)
+                .Include(sr => sr.Staff)
+                .Include(sr => sr.LabMember)
+                .Include(sr => sr.SupportMessages)
+        );
+        return supportRequest;
+    }
+
+    public async Task<IPaginate<SupportRequest>> GetSupportRequestPagingAsync(int page, int size, SupportRequestFilter? filter, string? sortBy, bool isAsc)
+    {
+        var supportRequest = await GetPagingListAsync(
+            selector: sr => new SupportRequest()
+            {
+                Id = sr.Id,
+                MemberId = sr.MemberId,
+                Member = sr.Member,
+                Lab = sr.Lab,
+                Staff = sr.Staff,
+                Status = sr.Status,
+                CreatedAt = sr.CreatedAt,
+                LabId = sr.LabId,
+                LabMember = sr.LabMember, 
+                ModifiedAt = sr.ModifiedAt,
+                StaffId = sr.StaffId,
+                SupportMessages = sr.SupportMessages
+            },
+            filter: filter,
+            sortBy: sortBy,
+            isAsc: isAsc,
+            page: page,
+            size: size
         );
         return supportRequest;
     }

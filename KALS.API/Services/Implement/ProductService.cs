@@ -32,7 +32,7 @@ public class ProductService: BaseService<ProductService>, IProductService
         _productImageRepository = productImageRepository;
     }
 
-    public async Task<IPaginate<GetProductWithCatogoriesResponse>> GetAllProductPagingAsync(int page, int size, ProductFilter filter, string? sortBy, bool isAsc)
+    public async Task<IPaginate<GetProductWithCatogoriesResponse>> GetAllProductPagingAsync(int page, int size, ProductFilter? filter, string? sortBy, bool isAsc)
     {
         // var products = await _unitOfWork.GetRepository<Product>().GetPagingListAsync(
         //     selector: p => new GetProductWithCatogoriesResponse()

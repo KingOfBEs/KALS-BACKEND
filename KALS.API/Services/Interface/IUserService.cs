@@ -15,10 +15,10 @@ public interface IUserService
     
     Task<UserResponse> ForgetPassword(ForgetPasswordRequest request);
     
-    Task<IPaginate<MemberResponse>> GetMembersAsync(int page, int size, MemberFilter filter, string sortBy, bool isAsc);
+    Task<IPaginate<MemberResponse>> GetMembersAsync(int page, int size, MemberFilter? filter, string? sortBy, bool isAsc);
     
     Task<MemberResponse> GetMemberInformationAsync();
-    Task<IPaginate<StaffResponse>> GetStaffsAsync(int page, int size, StaffFilter filter, string sortBy, bool isAsc);
+    Task<IPaginate<StaffResponse>> GetStaffsAsync(int page, int size, StaffFilter? filter, string? sortBy, bool isAsc);
     
     Task<UserResponse> UpdateMemberAsyncByManager(Guid id, UpdateMemberRequest request);
     

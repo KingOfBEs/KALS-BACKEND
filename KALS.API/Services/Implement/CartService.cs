@@ -27,21 +27,16 @@ public class CartService: BaseService<CartService>, ICartService
     {
         var userId = GetUserIdFromJwt();
         if (userId == Guid.Empty) throw new UnauthorizedAccessException(MessageConstant.User.UserNotFound);
-        // var user = await _unitOfWork.GetRepository<User>().SingleOrDefaultAsync(
-        //     predicate:x => x.Id == userId
-        // );
         var user = await _userRepository.GetUserByIdAsync(userId);
         if (user == null) throw new BadHttpRequestException(MessageConstant.User.UserNotFound);
-
-        // var product = await _unitOfWork.GetRepository<Product>().SingleOrDefaultAsync(
-        //     predicate: x => x.Id == request.ProductId
-        // );
+        
         var product = await _productRepository.GetProductByIdAsync(request.ProductId);
         if(product == null) throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
         
         var response = _mapper.Map<CartModelResponse>(product);
         response.Quantity = request.Quantity;
         response.ProductId = product.Id;
+        response.MainImage = product.ProductImages?.Where(pi => pi.isMain == true).FirstOrDefault()?.ImageUrl;
         
         var redis = ConnectionMultiplexer.Connect(_configuration.GetConnectionString("Redis"));
         var db = redis.GetDatabase();

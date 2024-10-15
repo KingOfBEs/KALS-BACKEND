@@ -10,11 +10,14 @@ public class OrderFilter: IFilter<Order>
     public DateTime? CreatedAt { get; set; }
     public string? Username { get; set; }
     
-    public Expression<Func<Domain.Entities.Order, bool>> ToExpression()
+    public string? Code { get; set; }
+    
+    public Expression<Func<Order, bool>> ToExpression()
     {
-        return order => 
+        return order =>
             (!Status.HasValue || order.Status == Status) &&
             (!CreatedAt.HasValue || order.CreatedAt == CreatedAt) &&
-            (string.IsNullOrEmpty(Username) || order.Member.User.Username.Contains(Username));
+            (string.IsNullOrEmpty(Username) || order.Member.User.Username.Contains(Username)) &&
+            (string.IsNullOrEmpty(Code) || order.Code.Contains(Code));
     }
 }

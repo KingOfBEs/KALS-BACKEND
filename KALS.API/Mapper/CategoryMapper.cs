@@ -11,6 +11,5 @@ public class CategoryMapper : Profile
     {
         CreateMap<CreateCategoryRequest, Category>();
         CreateMap<Category, CategoryResponse>();
-        CreateMap(typeof(IPaginate<>), typeof(IPaginate<>)).ConvertUsing(typeof(PaginateConverter<,>));
     }
 }
