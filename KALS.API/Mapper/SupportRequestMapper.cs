@@ -10,6 +10,8 @@ public class SupportRequestMapper: Profile
     {
         CreateMap<SupportRequest, SupportRequestResponse>()
             .ForMember(dest => dest.SupportMessages, 
-                opt => opt.MapFrom(src => src.SupportMessages));
+                opt => opt.MapFrom(src => src.SupportMessages))
+            .ForMember(dest => dest.ImageUrls , 
+                opt => opt.MapFrom(src => src.SupportMessages.SelectMany(x => x.SupportMessageImages).Select(x => x.ImageUrl)));
     }
 }

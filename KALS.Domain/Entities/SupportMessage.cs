@@ -15,4 +15,6 @@ public class SupportMessage: BaseEntity
     public Guid SupportRequestId { get; set; }
     [ForeignKey(nameof(SupportRequestId))]
     public SupportRequest SupportRequest { get; set; }
+    
+    public virtual ICollection<SupportMessageImage> SupportMessageImages { get; set; }
 }

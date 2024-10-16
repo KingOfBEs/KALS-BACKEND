@@ -19,7 +19,7 @@ public class SupportRequestController: BaseController<SupportRequestController>
     [HttpPost(ApiEndPointConstant.SupportRequest.SupportRequestEndPoint)]
     [ProducesResponseType(typeof(SupportRequestResponse), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> CreateSupportRequest([FromBody] SupportRequest request)
+    public async Task<IActionResult> CreateSupportRequest([FromForm] SupportRequest request)
     {
         var response = await _supportRequestService.CreateSupportRequest(request);
         if (response == null)
@@ -33,7 +33,7 @@ public class SupportRequestController: BaseController<SupportRequestController>
     [HttpPost(ApiEndPointConstant.SupportRequest.SupportMessage)]
     [ProducesResponseType(typeof(SupportMessageResponse), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> CreateSupportMessage(Guid id , [FromBody] ResponseSupportRequest request)
+    public async Task<IActionResult> CreateSupportMessage(Guid id , [FromForm] ResponseSupportRequest request)
     {
         var response = await _supportRequestService.ResponseSupportMessage(id, request);
         if (response == null)

@@ -10,4 +10,6 @@ public class SupportRequestResponse
     public SupportRequestStatus Status { get; set; }
     
     public ICollection<SupportMessageResponse>? SupportMessages { get; set; }
+    
+    public ICollection<string>? ImageUrls { get; set; }
 }

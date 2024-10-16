@@ -20,16 +20,19 @@ public class SupportRequestService: BaseService<SupportRequestService>, ISupport
     private readonly ILabMemberRepository _labMemberRepository;
     private readonly ISupportMessageRepository _supportMessageRepository;
     private readonly IStaffRepository _staffRepository;
+    private readonly ISupportMessageImageRepository _supportMessageImageRepository;
     
     public SupportRequestService(ILogger<SupportRequestService> logger, IMapper mapper, IHttpContextAccessor httpContextAccessor, 
         IConfiguration configuration, IMemberRepository memberRepository, ISupportRequestRepository supportRequestRepository, 
-        ILabMemberRepository labMemberRepository, ISupportMessageRepository supportMessageRepository, IStaffRepository staffRepository) : base(logger, mapper, httpContextAccessor, configuration)
+        ILabMemberRepository labMemberRepository, ISupportMessageRepository supportMessageRepository, IStaffRepository staffRepository,
+        ISupportMessageImageRepository supportMessageImageRepository) : base(logger, mapper, httpContextAccessor, configuration)
     {
         _memberRepository = memberRepository;
         _supportRequestRepository = supportRequestRepository;
         _labMemberRepository = labMemberRepository;
         _supportMessageRepository = supportMessageRepository;
         _staffRepository = staffRepository;
+        _supportMessageImageRepository = supportMessageImageRepository;
     }
 
     public async Task<SupportRequestResponse> CreateSupportRequest(Models.SupportRequest.SupportRequest request)
@@ -72,6 +75,21 @@ public class SupportRequestService: BaseService<SupportRequestService>, ISupport
         {
             try
             {
+                if (request.ImageFiles.Any())
+                {
+                    var images = await FirebaseUtil.UploadFilesToFirebase(request.ImageFiles, _configuration);
+                    foreach (var image in images)
+                    {
+                        var supportMessageImage = new SupportMessageImage()
+                        {
+                            Id = Guid.NewGuid(),
+                            ImageUrl = image,
+                            SupportMessage = supportMessage,
+                            SupportMessageId = supportMessage.Id
+                        };
+                        await _supportMessageImageRepository.InsertAsync(supportMessageImage);
+                    }
+                }
                 await _supportMessageRepository.InsertAsync(supportMessage);
                 await _supportRequestRepository.InsertAsync(supportRequest);
                 // labMember.NumberOfRequest -= 1;
@@ -123,6 +141,21 @@ public class SupportRequestService: BaseService<SupportRequestService>, ISupport
         {
             try
             {
+                if (request.ImageFiles.Any())
+                {
+                    var images = await FirebaseUtil.UploadFilesToFirebase(request.ImageFiles, _configuration);
+                    foreach (var image in images)
+                    {
+                        var supportMessageImage = new SupportMessageImage()
+                        {
+                            Id = Guid.NewGuid(),
+                            ImageUrl = image,
+                            SupportMessage = supportMessage,
+                            SupportMessageId = supportMessage.Id
+                        };
+                        await _supportMessageImageRepository.InsertAsync(supportMessageImage);
+                    }
+                }
                 await _supportMessageRepository.InsertAsync(supportMessage);
                 _supportRequestRepository.UpdateAsync(supportRequest);
                 var isSuccess = await _supportRequestRepository.SaveChangesAsync();

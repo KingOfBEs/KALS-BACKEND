@@ -62,6 +62,7 @@ public static class DependencyService
         service.AddScoped<IPaymentService, PaymentService>();
         service.AddScoped<IOrderService, OrderService>();
         service.AddScoped<ISupportRequestService, SupportRequestService>();
+        service.AddScoped<ISupportMessageImageRepository, SupportMessageImageRepository>();
         return service;
     }
 
