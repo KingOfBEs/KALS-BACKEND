@@ -274,4 +274,26 @@ public class LabService: BaseService<LabService>, ILabService
         if (isSuccess) labResponse = _mapper.Map<LabResponse>(lab);
         return labResponse;
     }
+
+    public async Task<LabResponse> UpdateLabAsync(Guid labId, UpdateLabRequest request)
+    {
+        if (labId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Lab.LabIdNotNull);
+        var lab = await _labRepository.GetLabByIdAsync(labId);
+        if (lab == null) throw new BadHttpRequestException(MessageConstant.Lab.LabNotFound);
+
+        if (request.File != null)
+        {
+            var fileUrl = await FirebaseUtil.UploadFileToFirebase(request.File, _configuration);
+            if (fileUrl == null) throw new BadHttpRequestException(MessageConstant.Lab.UploadFileFail);
+            lab.Url = fileUrl;
+        }
+
+        lab.Name = !string.IsNullOrEmpty(request.Name) ? request.Name : lab.Name;
+
+        _labRepository.UpdateAsync(lab);
+        var isSuccess = await _labRepository.SaveChangesAsync();
+        LabResponse response = null;
+        if (isSuccess) response = _mapper.Map<LabResponse>(lab);
+        return response;
+    }
 }

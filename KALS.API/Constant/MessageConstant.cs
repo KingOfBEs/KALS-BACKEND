@@ -51,6 +51,7 @@ public class MessageConstant
         public const string UploadFileFail = "Upload file không thành công";
         public const string CreateLabFail = "Tạo lab không thành công";
         public const string LabNotFound = "Lab không tồn tại";
+        public const string UpdateLabFail = "Cập nhật lab không thành công";
     }
 
     public static class Category

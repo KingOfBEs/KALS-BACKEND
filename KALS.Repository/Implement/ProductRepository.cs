@@ -44,7 +44,6 @@ public class ProductRepository: GenericRepository<Product>, IProductRepository
                 ModifiedAt = p.ModifiedAt,
                 ProductCategories = p.ProductCategories.Any(pc => pc.ProductId == p.Id) ? p.ProductCategories : null,
                 ProductImages = p.ProductImages.Any(pi => pi.ProductId == p.Id) ? p.ProductImages : null,
-                LabProducts = p.LabProducts.Any(lp => lp.ProductId == p.Id) ? p.LabProducts : null,
                 ChildProducts = p.ChildProducts.Any(cp => cp.ParentProductId == p.Id) ? p.ChildProducts : null
             },
             predicate: p => !p.IsHidden,

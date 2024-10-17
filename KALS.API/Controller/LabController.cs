@@ -44,5 +44,19 @@ public class LabController: BaseController<LabController>
         _logger.LogInformation($"Create new lab successful with {request.Name}");
         return CreatedAtAction(nameof(CreateLab), response);
     }
-    
+
+    [HttpPatch(ApiEndPointConstant.Lab.LabById)]
+    [ProducesResponseType(typeof(LabResponse), statusCode: StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> UpdateLabById(Guid id, [FromBody] UpdateLabRequest request)
+    {
+        var response = await _labService.UpdateLabAsync(id, request);
+        if (response == null)
+        {
+            _logger.LogError($"Update lab failed with {id}");
+            return Problem($"{MessageConstant.Lab.UpdateLabFail}: {id}");
+        }
+        _logger.LogInformation($"Update lab successful with {id}");
+        return Ok(response);
+    }
 }

@@ -13,5 +13,5 @@ public interface ILabService
     
     Task<LabResponse> CreateLabAsync(CreateLabRequest request);
     
-    // Task<LabResponse> UpdateLabAsync(Guid labId, UpdateLabRequest request);
+    Task<LabResponse> UpdateLabAsync(Guid labId, UpdateLabRequest request);
 }

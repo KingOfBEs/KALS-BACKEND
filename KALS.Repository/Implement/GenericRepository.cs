@@ -46,24 +46,25 @@ public class GenericRepository<T>: IGenericRepository<T>, IAsyncDisposable where
         Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null)
     {
         IQueryable<T> query = _dbSet;
-        if (include != null) query = include(query);
         if (predicate != null) query = query.Where(predicate);
+        if (include != null) query = include(query);
         if (orderBy != null) return orderBy(query).AsNoTracking().Select(selector).FirstOrDefaultAsync();
         
         return query.AsNoTracking().Select(selector).FirstOrDefaultAsync();
     }
-
+    
     public async Task<IPaginate<TResult>> GetPagingListAsync<TResult>(Expression<Func<T, TResult>> selector, IFilter<T> filter, Expression<Func<T, bool>> predicate = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
         Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, int page = 1, int size = 10, string sortBy = null, bool isAsc = true)
     {
         IQueryable<T> query = _dbSet.AsNoTracking();
+        
         if (filter != null)
         {
             var filterExpression = filter.ToExpression();
             query = query.Where(filterExpression);
         }
-        if (include != null) query = include(query);
         if (predicate != null) query = query.Where(predicate);
+        if (include != null) query = include(query);
         if (!string.IsNullOrEmpty(sortBy))
         {
             query = ApplySort(query, sortBy, isAsc);
@@ -73,10 +74,55 @@ public class GenericRepository<T>: IGenericRepository<T>, IAsyncDisposable where
             query = orderBy(query);
         }
         
-        return await query.AsNoTracking().Select(selector).ToPaginateAsync(page, size, 1);
+        return await query.Select(selector).ToPaginateAsync(page, size, 1);
       
     }
 
+    public Task<IPaginate<TResult>> GetPagingListAsync1<TResult>(Expression<Func<T, TResult>> selector, IFilter<T> filter = null, Expression<Func<T, bool>> predicate = null,
+        Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, string includeProperties = null, int page = 1, int size = 10, string sortBy = null,
+        bool isAsc = true)
+    {
+        IQueryable<T> query = _dbSet.AsNoTracking();
+        if (filter != null)
+        {
+            var filterExpression = filter.ToExpression();
+            query = query.Where(filterExpression);
+        }
+        if (predicate != null) query = query.Where(predicate);
+        if (!string.IsNullOrEmpty(includeProperties))
+        {
+            foreach (var includeProperty in includeProperties.Split
+                         (new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+        }
+        if (!string.IsNullOrEmpty(sortBy))
+        {
+            query = ApplySort(query, sortBy, isAsc);
+        }
+        else if (orderBy != null)
+        {
+            query = orderBy(query);
+        }
+        return query.AsNoTracking().Select(selector).ToPaginateAsync(page, size, 1);
+    }
+
+    private IQueryable<T> PerformManualJoin(IQueryable<T> query)
+    {
+        var parameter = Expression.Parameter(typeof(T), "x");
+        var property = typeof(T).GetProperty("UserId", BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+        if (property == null)
+        {
+            throw new ArgumentException($"Property 'UserId' not found on type {typeof(T).Name}");
+        }
+        var propertyAccess = Expression.Property(parameter, property);
+        var lambda = Expression.Lambda(propertyAccess, parameter);
+        var resultExpression = Expression.Call(typeof(Queryable), "Join", 
+            new Type[] {typeof(T), typeof(T), typeof(Guid), typeof(T)},
+            query.Expression, Expression.Quote(lambda), query.Expression, Expression.Quote(lambda), Expression.Quote(lambda));
+        return query.Provider.CreateQuery<T>(resultExpression);
+    }
     private IQueryable<T> ApplySort(IQueryable<T> query, string sortBy, bool isAsc)
     {
         var parameter = Expression.Parameter(typeof(T), "x");

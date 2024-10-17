@@ -30,6 +30,17 @@ public interface IGenericRepository<T>: IDisposable where T : class
         string sortBy = null,
         bool isAsc = true
     );
+    Task<IPaginate<TResult>> GetPagingListAsync1<TResult>(
+        Expression<Func<T, TResult>> selector,
+        IFilter<T> filter = null,
+        Expression<Func<T, bool>> predicate = null,
+        Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+        string includeProperties = null,
+        int page = 1,
+        int size = 10,
+        string sortBy = null,
+        bool isAsc = true
+    );
     Task<ICollection<T>> GetListAsync(
         Expression<Func<T, bool>> predicate = null,
         Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
