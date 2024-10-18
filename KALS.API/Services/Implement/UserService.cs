@@ -25,13 +25,15 @@ public class UserService : BaseService<UserService>, IUserService
     private readonly IUserRepository _userRepository;
     private readonly IMemberRepository _memberRepository;
     private readonly IStaffRepository _staffRepository;
+    private readonly IRedisService _redisService;
     public UserService(ILogger<UserService> logger, IMapper mapper, 
         IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IUserRepository userRepository,
-        IMemberRepository memberRepository, IStaffRepository staffRepository) : base(logger, mapper, httpContextAccessor, configuration)
+        IMemberRepository memberRepository, IStaffRepository staffRepository, IRedisService redisService) : base(logger, mapper, httpContextAccessor, configuration)
     {
         _userRepository = userRepository;
         _memberRepository = memberRepository;
         _staffRepository = staffRepository;
+        _redisService = redisService;
     }
 
     public async Task<LoginResponse> LoginAsync(LoginRequest request)
@@ -65,12 +67,12 @@ public class UserService : BaseService<UserService>, IUserService
         if (userList.Any(u => u.Username == request.Username)) throw new BadHttpRequestException(MessageConstant.User.UserNameExisted);
         if (userList.Any(u => u.PhoneNumber == request.PhoneNumber)) throw new BadHttpRequestException(MessageConstant.User.PhoneNumberExisted);
         var user = _mapper.Map<User>(request);
-        var redis = ConnectionMultiplexer.Connect(_configuration.GetConnectionString("Redis"));
-        var db = redis.GetDatabase();
+        // var redis = ConnectionMultiplexer.Connect(_configuration.GetConnectionString("Redis"));
+        // var db = redis.GetDatabase();
         var key = request.PhoneNumber;
-        var existingOtp = db.StringGet(key);
+        var existingOtp = await _redisService.GetStringAsync(key);
         
-        if (existingOtp.IsNullOrEmpty) throw new BadHttpRequestException(MessageConstant.Sms.OtpNotFound);
+        if (string.IsNullOrEmpty(existingOtp)) throw new BadHttpRequestException(MessageConstant.Sms.OtpNotFound);
         if (existingOtp != request.Otp) throw new BadHttpRequestException(MessageConstant.Sms.OtpIncorrect);
         
         user.Password = PasswordUtil.HashPassword(request.Password);
@@ -107,11 +109,11 @@ public class UserService : BaseService<UserService>, IUserService
 
     public async Task<string> GenerateOtpAsync(GenerateOtpRequest request)
     {
-        var redis = ConnectionMultiplexer.Connect(_configuration.GetConnectionString("Redis"));
-        var db = redis.GetDatabase();
+        // var redis = ConnectionMultiplexer.Connect(_configuration.GetConnectionString("Redis"));
+        // var db = redis.GetDatabase();
         var key = request.PhoneNumber;
         
-        var existingOtp = await db.StringGetAsync(key);
+        var existingOtp = await _redisService.GetStringAsync(key);
         if (!string.IsNullOrEmpty(existingOtp)) throw new BadHttpRequestException(MessageConstant.Sms.OtpAlreadySent);
         
         if(request.PhoneNumber == null) throw new BadHttpRequestException(MessageConstant.User.PhoneNumberNotFound);
@@ -126,7 +128,7 @@ public class UserService : BaseService<UserService>, IUserService
             throw new BadHttpRequestException(MessageConstant.Sms.SendSmsFailed);
         }
         
-        await db.StringSetAsync(key, otp, TimeSpan.FromMinutes(2));
+        await _redisService.SetStringAsync(key, otp, TimeSpan.FromMinutes(2));
         return request.PhoneNumber;
     }
 
@@ -137,12 +139,12 @@ public class UserService : BaseService<UserService>, IUserService
         // );
         var user = await _userRepository.GetUserByPhoneNumber(request.PhoneNumber);
         if (user == null) throw new BadHttpRequestException(MessageConstant.User.UserNotFound);
-        var redis = ConnectionMultiplexer.Connect(_configuration.GetConnectionString("Redis"));
-        var db = redis.GetDatabase();
+        // var redis = ConnectionMultiplexer.Connect(_configuration.GetConnectionString("Redis"));
+        // var db = redis.GetDatabase();
         var key = request.PhoneNumber;
-        var existingOtp = db.StringGet(key);
+        var existingOtp = await _redisService.GetStringAsync(key);
         
-        if (existingOtp.IsNullOrEmpty) throw new BadHttpRequestException(MessageConstant.Sms.OtpNotFound);
+        if (string.IsNullOrEmpty(existingOtp)) throw new BadHttpRequestException(MessageConstant.Sms.OtpNotFound);
         if (existingOtp != request.Otp) throw new BadHttpRequestException(MessageConstant.Sms.OtpIncorrect);
         
         user.Password = PasswordUtil.HashPassword(request.Password);
@@ -156,29 +158,6 @@ public class UserService : BaseService<UserService>, IUserService
 
     public async Task<IPaginate<MemberResponse>> GetMembersAsync(int page, int size, MemberFilter? filter, string? sortBy, bool isAsc)
     {
-        // var members = await _unitOfWork.GetRepository<Member>().GetPagingListAsync(
-        //     selector: m => new MemberResponse()
-        //     {
-        //         Id = m.Id,
-        //         UserId = m.User.Id,
-        //         Username = m.User.Username,
-        //         FullName = m.User.FullName,
-        //         PhoneNumber = m.User.PhoneNumber,
-        //         Ward = m.Ward,
-        //         District = m.District,
-        //         Province = m.Province,
-        //         Address = m.Address,
-        //         ProvinceCode = m.ProvinceCode,
-        //         DistrictCode = m.DistrictCode,
-        //         WardCode = m.WardCode
-        //     },
-        //     page: page,
-        //     size: size,
-        //     filter: filter,
-        //     include: m => m.Include(m => m.User),
-        //     sortBy: sortBy,
-        //     isAsc: isAsc
-        // );
         var members = await _memberRepository.GetMembersPagingAsync(page, size, filter, sortBy, isAsc);
         var response = _mapper.Map<IPaginate<MemberResponse>>(members);
         return response;
@@ -188,12 +167,10 @@ public class UserService : BaseService<UserService>, IUserService
     {
         var userId = GetUserIdFromJwt();
         if (userId == Guid.Empty) throw new UnauthorizedAccessException(MessageConstant.User.UserNotFound);
-        // var member = await _unitOfWork.GetRepository<Member>().SingleOrDefaultAsync(
-        //     predicate: m => m.UserId == userId,
-        //     include: m => m.Include(m => m.User)
-        // );
+        
         var member = await _memberRepository.GetMemberByUserId(userId);
         if (member == null) throw new BadHttpRequestException(MessageConstant.User.MemberNotFound);
+        
         var response = _mapper.Map<MemberResponse>(member);
         response.Username = member.User.Username;
         response.FullName = member.User.FullName;
@@ -203,23 +180,6 @@ public class UserService : BaseService<UserService>, IUserService
 
     public async Task<IPaginate<StaffResponse>> GetStaffsAsync(int page, int size, StaffFilter? filter, string? sortBy, bool isAsc)
     {
-        // var staffs = _unitOfWork.GetRepository<Staff>().GetPagingListAsync(
-        //     selector: s => new StaffResponse()
-        //     {
-        //         Id = s.Id,
-        //         UserId = s.User.Id,
-        //         Username = s.User.Username,
-        //         FullName = s.User.FullName,
-        //         PhoneNumber = s.User.PhoneNumber,
-        //         Type = s.Type
-        //     },
-        //     page: page,
-        //     size: size,
-        //     filter: filter,
-        //     include: s => s.Include(s => s.User),
-        //     sortBy: sortBy,
-        //     isAsc: isAsc
-        // );
         var staffs = await _staffRepository.GetStaffPagingAsync(page, size, filter, sortBy, isAsc);
         var response = _mapper.Map<IPaginate<StaffResponse>>(staffs);
         return response;
@@ -228,10 +188,7 @@ public class UserService : BaseService<UserService>, IUserService
     public async Task<UserResponse> UpdateMemberAsyncByManager(Guid id, UpdateMemberRequest request)
     {
         if (id == Guid.Empty) throw new BadHttpRequestException(MessageConstant.User.UserIdNotNull);
-        // var member = await _unitOfWork.GetRepository<Member>().SingleOrDefaultAsync(
-        //     predicate: m => m.UserId == id,
-        //     include: m => m.Include(m => m.User)
-        // );
+        
         var member = await _memberRepository.GetMemberByUserId(id);
         if (member == null) throw new BadHttpRequestException(MessageConstant.User.MemberNotFound);
         request.TrimString();

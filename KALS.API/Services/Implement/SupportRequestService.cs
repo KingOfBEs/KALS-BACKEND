@@ -21,11 +21,12 @@ public class SupportRequestService: BaseService<SupportRequestService>, ISupport
     private readonly ISupportMessageRepository _supportMessageRepository;
     private readonly IStaffRepository _staffRepository;
     private readonly ISupportMessageImageRepository _supportMessageImageRepository;
+    private readonly IFirebaseService _firebaseService;
     
     public SupportRequestService(ILogger<SupportRequestService> logger, IMapper mapper, IHttpContextAccessor httpContextAccessor, 
         IConfiguration configuration, IMemberRepository memberRepository, ISupportRequestRepository supportRequestRepository, 
         ILabMemberRepository labMemberRepository, ISupportMessageRepository supportMessageRepository, IStaffRepository staffRepository,
-        ISupportMessageImageRepository supportMessageImageRepository) : base(logger, mapper, httpContextAccessor, configuration)
+        ISupportMessageImageRepository supportMessageImageRepository, IFirebaseService firebaseService) : base(logger, mapper, httpContextAccessor, configuration)
     {
         _memberRepository = memberRepository;
         _supportRequestRepository = supportRequestRepository;
@@ -33,6 +34,7 @@ public class SupportRequestService: BaseService<SupportRequestService>, ISupport
         _supportMessageRepository = supportMessageRepository;
         _staffRepository = staffRepository;
         _supportMessageImageRepository = supportMessageImageRepository;
+        _firebaseService = firebaseService;
     }
 
     public async Task<SupportRequestResponse> CreateSupportRequest(Models.SupportRequest.SupportRequest request)
@@ -77,7 +79,7 @@ public class SupportRequestService: BaseService<SupportRequestService>, ISupport
             {
                 if (request.ImageFiles.Any())
                 {
-                    var images = await FirebaseUtil.UploadFilesToFirebase(request.ImageFiles, _configuration);
+                    var images = await _firebaseService.UploadFilesToFirebaseAsync(request.ImageFiles);
                     foreach (var image in images)
                     {
                         var supportMessageImage = new SupportMessageImage()
@@ -143,7 +145,7 @@ public class SupportRequestService: BaseService<SupportRequestService>, ISupport
             {
                 if (request.ImageFiles.Any())
                 {
-                    var images = await FirebaseUtil.UploadFilesToFirebase(request.ImageFiles, _configuration);
+                    var images = await _firebaseService.UploadFilesToFirebaseAsync(request.ImageFiles);
                     foreach (var image in images)
                     {
                         var supportMessageImage = new SupportMessageImage()

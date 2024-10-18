@@ -31,7 +31,7 @@ public class LabController: BaseController<LabController>
         return Ok(response);
     }
     [HttpPost(ApiEndPointConstant.Lab.LabEndPoint)]
-    [ProducesResponseType(typeof(LabResponse), statusCode: StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(LabResponse), statusCode: StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateLab([FromForm] CreateLabRequest request)
     {

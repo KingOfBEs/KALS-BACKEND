@@ -64,7 +64,7 @@ public class CategoryController: BaseController<CategoryController>
         return Ok(response);
     }
     [HttpPost(ApiEndPointConstant.Category.CategoryEndPoint)]
-    [ProducesResponseType(typeof(CategoryResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CategoryResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryRequest request)
     {

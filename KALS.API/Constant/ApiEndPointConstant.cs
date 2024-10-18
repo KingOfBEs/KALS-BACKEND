@@ -21,6 +21,7 @@ public class ApiEndPointConstant
         public const string UpdateProductRelationship = ProductById + "/product-relationship";
         public const string LabToProduct = ProductById + "/lab";
         public const string CartByProductId = ProductById + "/cart";
+        public const string ProductImage = ProductById + "/product-image";
     }
 
     public class Lab
@@ -80,5 +81,11 @@ public class ApiEndPointConstant
         public const string SupportRequestById = SupportRequestEndPoint + "/{id}";
         public const string SupportMessage = SupportRequestById + "/messages";
         
+    }
+
+    public class ProductImage
+    {
+        public const string ProductImageEndPoint = ApiEndpoint + "/product-images";
+        public const string ProductImageById = ProductImageEndPoint + "/{id}";
     }
 }

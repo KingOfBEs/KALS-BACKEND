@@ -17,7 +17,7 @@ public class PaymentController: BaseController<PaymentController>
         _cartService = cartService;
     }
     [HttpPost(ApiEndPointConstant.Payment.PaymentCheckOut)]
-    [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CheckOut([FromBody] CheckOutRequest request)
     {
@@ -28,9 +28,9 @@ public class PaymentController: BaseController<PaymentController>
                 return Problem(MessageConstant.Payment.CheckOutFail);
             }
             _logger.LogInformation("Check out successful");
-            return Ok(result);
+            return CreatedAtAction(nameof(CheckOut), result);
     }
-    [HttpPost(ApiEndPointConstant.Payment.PaymentEndPoint)]
+    [HttpPatch(ApiEndPointConstant.Payment.PaymentEndPoint)]
     [ProducesResponseType(typeof(PaymentWithOrderResponse), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdatePaymentStatus([FromBody] UpdatePaymentOrderStatusRequest request)

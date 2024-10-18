@@ -21,15 +21,17 @@ public class ProductService: BaseService<ProductService>, IProductService
     private readonly IProductRelationshipRepository _productRelationshipRepository;
     private readonly IProductCategoryRepository _productCategoryRepository;
     private readonly IProductImageRepository _productImageRepository;
+    private readonly IFirebaseService _firebaseService;
     public ProductService(ILogger<ProductService> logger, IMapper mapper, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, 
         IProductRepository productRepository, ICategoryRepository categoryRepository, IProductRelationshipRepository productRelationshipRepository,
-        IProductCategoryRepository productCategoryRepository, IProductImageRepository productImageRepository) : base(logger, mapper, httpContextAccessor, configuration)
+        IProductCategoryRepository productCategoryRepository, IProductImageRepository productImageRepository, IFirebaseService firebaseService) : base(logger, mapper, httpContextAccessor, configuration)
     {
         _productRepository = productRepository;
         _categoryRepository = categoryRepository;
         _productRelationshipRepository = productRelationshipRepository;
         _productCategoryRepository = productCategoryRepository;
         _productImageRepository = productImageRepository;
+        _firebaseService = firebaseService;
     }
 
     public async Task<IPaginate<GetProductWithCatogoriesResponse>> GetAllProductPagingAsync(int page, int size, ProductFilter? filter, string? sortBy, bool isAsc)
@@ -203,7 +205,7 @@ public class ProductService: BaseService<ProductService>, IProductService
                     }
                 }
 
-                var mainImageUrl = await FirebaseUtil.UploadFileToFirebase(request.MainImage, _configuration);
+                var mainImageUrl = await _firebaseService.UploadFileToFirebaseAsync(request.MainImage);
                 if (!string.IsNullOrEmpty(mainImageUrl))
                 {
                     await _productImageRepository.InsertAsync(new ProductImage()
@@ -217,7 +219,7 @@ public class ProductService: BaseService<ProductService>, IProductService
 
                 if (request.SecondaryImages != null)
                 {
-                    var imageUrls = await FirebaseUtil.UploadFilesToFirebase(request.SecondaryImages, _configuration);
+                    var imageUrls = await _firebaseService.UploadFilesToFirebaseAsync(request.SecondaryImages);
                     if (imageUrls.Any())
                     {
                         foreach (var imageUrl in imageUrls)
@@ -377,5 +379,45 @@ public class ProductService: BaseService<ProductService>, IProductService
         var products = await _productRepository.GetProductsPagingByCategoryId(categoryId, page, size);
         var productResponses = _mapper.Map<IPaginate<GetProductResponse>>(products);
         return productResponses;
+    }
+
+    public async Task<GetProductResponse> DeleteProductImageById(Guid id)
+    {
+        if (id == Guid.Empty) throw new BadHttpRequestException(MessageConstant.ProductImage.ProductImageIdNotNull);
+        var productImage = await _productImageRepository.GetProductImageByIdAsync(id);
+        if (productImage == null) throw new BadHttpRequestException(MessageConstant.ProductImage.ProductImageNotFound);
+        _productImageRepository.DeleteAsync(productImage);
+        
+        bool isSuccess = await _productImageRepository.SaveChangesAsync();
+        GetProductResponse productResponse = null;
+        if (isSuccess) productResponse = _mapper.Map<GetProductResponse>(productImage.Product);
+        return productResponse;
+    }
+
+    public async Task<GetProductResponse> AddProductImageByProductIdAsync(Guid productId, AddImageProductRequest request)
+    {
+        if (productId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Product.ProductIdNotNull);
+        var product = await _productRepository.GetProductByIdAsync(productId);
+        if (product == null) throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
+        if (request.IsMain)
+        {
+            var productImages = await _productImageRepository.GetProductImagesByProductId(productId);
+            if(productImages.Any(pi => pi.isMain)) throw new BadHttpRequestException(MessageConstant.ProductImage.MainImageExist);
+        }
+        var imageUrl = await _firebaseService.UploadFileToFirebaseAsync(request.Image);
+        if (string.IsNullOrEmpty(imageUrl)) throw new BadHttpRequestException(MessageConstant.ProductImage.UploadImageFail);
+        var newProductImage = new ProductImage()
+        {
+            Id = Guid.NewGuid(),
+            isMain = request.IsMain,
+            ImageUrl = imageUrl,
+            Product = product,
+            ProductId = product.Id
+        };
+        await _productImageRepository.InsertAsync(newProductImage);
+        GetProductResponse response = null;
+        var isSuccess = await _productImageRepository.SaveChangesAsync();
+        if (isSuccess) response = _mapper.Map<GetProductResponse>(product);
+        return response;
     }
 }

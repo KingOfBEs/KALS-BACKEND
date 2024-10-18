@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace KALS.API.Extensions;
@@ -47,6 +48,15 @@ public static class DependencyService
         service.AddDbContext<KitAndLabDbContext>(options => options.UseSqlServer(CreateConnectionString(configuration)));
         return service;
     }
+
+    public static IServiceCollection AddRedis(this IServiceCollection service)
+    {
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).Build();
+        service.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(configuration.GetConnectionString("Redis")));
+        service.AddScoped<IRedisService, RedisService>();
+        return service;
+    }
     private static string CreateConnectionString(IConfiguration configuration)
     {
         var connectionString = configuration.GetValue<string>("ConnectionStrings:MyConnectionString");
@@ -63,6 +73,8 @@ public static class DependencyService
         service.AddScoped<IOrderService, OrderService>();
         service.AddScoped<ISupportRequestService, SupportRequestService>();
         service.AddScoped<ISupportMessageImageRepository, SupportMessageImageRepository>();
+        service.AddHttpClient<IFirebaseService, FirebaseService>();
+        service.AddScoped<IGoogleDriveService, GoogleDriveService>();
         return service;
     }
 

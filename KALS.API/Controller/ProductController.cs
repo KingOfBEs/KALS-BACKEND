@@ -1,4 +1,5 @@
 using KALS.API.Constant;
+using KALS.API.Models.Cart;
 using KALS.API.Models.Lab;
 using KALS.API.Models.Product;
 using KALS.API.Services.Interface;
@@ -100,6 +101,7 @@ public class ProductController : BaseController<ProductController>
         return Ok(response);
     }
     [HttpDelete(ApiEndPointConstant.Product.CartByProductId)]
+    [ProducesResponseType(typeof(ICollection<CartModelResponse>), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> RemoveFromCartAsync(Guid id)
     {
@@ -112,4 +114,19 @@ public class ProductController : BaseController<ProductController>
         _logger.LogInformation($"Remove from cart successful with {id}");
         return Ok(response);
     }
+    [HttpPost(ApiEndPointConstant.Product.ProductImage)]
+    [ProducesResponseType(typeof(GetProductResponse), statusCode: StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> AddProductImage(Guid id, [FromForm] AddImageProductRequest request)
+    {
+        var response = await _productService.AddProductImageByProductIdAsync(id, request);
+        if (response == null)
+        {
+            _logger.LogError($"Add product image failed with {id}");
+            return Problem($"{MessageConstant.ProductImage.AddProductImageFail}: {id}");
+        }
+        _logger.LogInformation($"Add product image successful with {id}");
+        return CreatedAtAction(nameof(AddProductImage), response);
+    }
+    
 }

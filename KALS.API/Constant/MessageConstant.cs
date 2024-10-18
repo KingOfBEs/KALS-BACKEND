@@ -43,6 +43,7 @@ public class MessageConstant
         public const string ChildProductIdNotNull = "Id của sản phẩm con không được để trống";
         public const string ProductOutOfStock = "Sản phẩm đã hết hàng";
         public const string CreateProductFailed = "Tạo sản phẩm không thành công";
+        
     }
     public static class Lab
     {
@@ -119,5 +120,15 @@ public class MessageConstant
     public static class LabMember
     {
         public const string LabMemberNotFound = "Lab member không tồn tại";
+    }
+
+    public static class ProductImage
+    {
+        public const string ProductImageIdNotNull = "Id ảnh sản phẩm không được để trống";
+        public const string ProductImageNotFound = "Ảnh sản phẩm không tồn tại";
+        public const string DeleteProductImageFail = "Xóa ảnh sản phẩm không thành công";
+        public const string MainImageExist = "Ảnh chính đã tồn tại";
+        public const string UploadImageFail = "Upload ảnh không thành công";
+        public const string AddProductImageFail = "Thêm ảnh sản phẩm không thành công";
     }
 }

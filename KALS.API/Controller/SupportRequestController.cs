@@ -17,7 +17,7 @@ public class SupportRequestController: BaseController<SupportRequestController>
         _supportRequestService = supportRequestService;
     }
     [HttpPost(ApiEndPointConstant.SupportRequest.SupportRequestEndPoint)]
-    [ProducesResponseType(typeof(SupportRequestResponse), statusCode: StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(SupportRequestResponse), statusCode: StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateSupportRequest([FromForm] SupportRequest request)
     {
@@ -28,10 +28,10 @@ public class SupportRequestController: BaseController<SupportRequestController>
             return Problem($"{MessageConstant.SupportRequest.CreateSupportRequestFail}");
         }
         _logger.LogInformation($"Create support request successful with {response.Id}");
-        return Ok(response);
+        return CreatedAtAction(nameof(CreateSupportRequest), response);
     }
     [HttpPost(ApiEndPointConstant.SupportRequest.SupportMessage)]
-    [ProducesResponseType(typeof(SupportMessageResponse), statusCode: StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(SupportMessageResponse), statusCode: StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateSupportMessage(Guid id , [FromForm] ResponseSupportRequest request)
     {
@@ -42,7 +42,7 @@ public class SupportRequestController: BaseController<SupportRequestController>
             return Problem($"{MessageConstant.SupportRequest.ResponseSupportRequestFail}");
         }
         _logger.LogInformation($"Response support message successful with {response.Id}");
-        return Ok(response);
+        return CreatedAtAction(nameof(CreateSupportMessage), response);
     }
     [HttpGet(ApiEndPointConstant.SupportRequest.SupportRequestEndPoint)]
     [ProducesResponseType(typeof(IPaginate<SupportRequestResponse>), statusCode: StatusCodes.Status200OK)]

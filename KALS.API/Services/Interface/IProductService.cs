@@ -13,4 +13,9 @@ public interface IProductService
     Task<GetProductResponse> UpdateProductRelationshipByProductIdAsync(Guid parentId, UpdateChildProductForKitRequest request);
     Task<ICollection<GetProductResponse>> GetChildProductsByParentIdAsync(Guid parentId);
     Task<IPaginate<GetProductResponse>> GetProductByCategoryIdAsync(Guid categoryId, int page, int size);
+    
+    Task<GetProductResponse> DeleteProductImageById(Guid id);
+    
+    Task<GetProductResponse> AddProductImageByProductIdAsync(Guid productId,  AddImageProductRequest request);
+    
 }

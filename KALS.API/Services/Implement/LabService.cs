@@ -23,11 +23,14 @@ public class LabService: BaseService<LabService>, ILabService
     private readonly IMemberRepository _memberRepository;
     private readonly IUserRepository _userRepository;
     private readonly ILabMemberRepository _labMemberRepository;
+    private readonly IFirebaseService _firebaseService;
+    private readonly IGoogleDriveService _googleDriveService;
     
     public LabService(ILogger<LabService> logger, IMapper mapper, 
         IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IProductRepository productRepository, 
         ILabProductRepository labProductRepository, ILabRepository labRepository, IMemberRepository memberRepository, 
-        IUserRepository userRepository, ILabMemberRepository labMemberRepository) : base(logger, mapper, httpContextAccessor, configuration)
+        IUserRepository userRepository, ILabMemberRepository labMemberRepository, IFirebaseService firebaseService,
+        IGoogleDriveService googleDriveService) : base(logger, mapper, httpContextAccessor, configuration)
     {
         _productRepository = productRepository;
         _labProductRepository = labProductRepository;
@@ -35,6 +38,7 @@ public class LabService: BaseService<LabService>, ILabService
         _memberRepository = memberRepository;
         _userRepository = userRepository;
         _labMemberRepository = labMemberRepository;
+        _firebaseService = firebaseService;
     }
 
     public async Task<GetProductResponse> AssignLabToProductAsync(Guid productId, AssignLabsToProductRequest request)
@@ -246,7 +250,7 @@ public class LabService: BaseService<LabService>, ILabService
         var user = await _userRepository.GetUserByIdAsync(userId);
         if(user == null) throw new UnauthorizedAccessException(MessageConstant.User.UserNotFound);
         
-        var googleDriveResponse = await GoogleDriveUtil.UploadToGoogleDrive(request.File, _configuration, _logger);
+        var googleDriveResponse = await _googleDriveService.UploadToGoogleDrive(request.File);
         if (googleDriveResponse == null) throw new BadHttpRequestException(MessageConstant.Lab.UploadFileFail);
         if(request.Name is null) request.Name = request.File.FileName;
         var lab = _mapper.Map<Lab>(request);
@@ -283,7 +287,7 @@ public class LabService: BaseService<LabService>, ILabService
 
         if (request.File != null)
         {
-            var fileUrl = await FirebaseUtil.UploadFileToFirebase(request.File, _configuration);
+            var fileUrl = await _firebaseService.UploadFileToFirebaseAsync(request.File);
             if (fileUrl == null) throw new BadHttpRequestException(MessageConstant.Lab.UploadFileFail);
             lab.Url = fileUrl;
         }

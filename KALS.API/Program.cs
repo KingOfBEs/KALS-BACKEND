@@ -1,6 +1,7 @@
 using KALS.API.Constant;
 using KALS.API.Extensions;
 using KALS.API.Middleware;
+using StackExchange.Redis;
 
 var logger = NLog.LogManager.LoadConfiguration(string.Concat(Directory.GetCurrentDirectory(), "/nlog.config"))
     .GetCurrentClassLogger();
@@ -15,6 +16,7 @@ try
             policy => { policy.WithOrigins("*").AllowAnyHeader().AllowAnyMethod(); });
     });
     builder.Services.AddDatabase();
+    builder.Services.AddRedis();
     // builder.Services.AddUnitOfWork();
     builder.Services.AddRepositories();
     builder.Services.AddServices(builder.Configuration);

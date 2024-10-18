@@ -16,7 +16,7 @@ public class AuthController: BaseController<AuthController>
     }
     
     [HttpPost(ApiEndPointConstant.Auth.SendOtp)]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> SendOtp([FromBody] GenerateOtpRequest request)
     {
@@ -26,7 +26,7 @@ public class AuthController: BaseController<AuthController>
             return Problem(MessageConstant.Sms.SendSmsFailed);
         }
 
-        return Ok(result);
+        return CreatedAtAction(nameof(SendOtp), result);
     }
     [HttpPost(ApiEndPointConstant.Auth.Signup)]
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status201Created)]
