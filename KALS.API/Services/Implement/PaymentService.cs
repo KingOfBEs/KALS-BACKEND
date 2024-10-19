@@ -151,17 +151,7 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
             }
         }
     }
-    // private string ComputeSignature(int orderCode, decimal amount, string description, string cancelUrl, string returnUrl, string secretKey)
-    // {
-    //     // Recompute the signature based on the data and secret key (checksum key)
-    //     string rawData = $"amount={amount}&cancelUrl={cancelUrl}&description={description}&orderCode={orderCode}&returnUrl={returnUrl}{secretKey}";
-    //
-    //     using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secretKey)))
-    //     {
-    //         byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(rawData));
-    //         return BitConverter.ToString(hash).Replace("-", "").ToLower();
-    //     }
-    // }
+    
     public async Task<PaymentWithOrderResponse> HandlePayment(UpdatePaymentOrderStatusRequest request)
     {
         if(request.OrderCode == 0) throw new BadHttpRequestException(MessageConstant.Payment.OrderCodeNotNull);

@@ -8,7 +8,7 @@ namespace KALS.Repository.Implement;
 
 public class CategoryRepository: GenericRepository<Category>, ICategoryRepository
 {
-    public CategoryRepository(KitAndLabDbContext context) : base(context)
+    public CategoryRepository(DbContext context) : base(context)
     {
     }
 

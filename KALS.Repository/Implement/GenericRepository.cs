@@ -12,10 +12,10 @@ namespace KALS.Repository.Implement;
 
 public class GenericRepository<T>: IGenericRepository<T>, IAsyncDisposable where T : class
 {
-    protected readonly KitAndLabDbContext _dbContext;
+    protected readonly DbContext _dbContext;
     protected readonly DbSet<T> _dbSet;
     
-    public GenericRepository(KitAndLabDbContext context)
+    public GenericRepository(DbContext context)
     {
         _dbContext = context;
         _dbSet = context.Set<T>();
@@ -77,37 +77,6 @@ public class GenericRepository<T>: IGenericRepository<T>, IAsyncDisposable where
         return await query.Select(selector).ToPaginateAsync(page, size, 1);
       
     }
-
-    public Task<IPaginate<TResult>> GetPagingListAsync1<TResult>(Expression<Func<T, TResult>> selector, IFilter<T> filter = null, Expression<Func<T, bool>> predicate = null,
-        Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, string includeProperties = null, int page = 1, int size = 10, string sortBy = null,
-        bool isAsc = true)
-    {
-        IQueryable<T> query = _dbSet.AsNoTracking();
-        if (filter != null)
-        {
-            var filterExpression = filter.ToExpression();
-            query = query.Where(filterExpression);
-        }
-        if (predicate != null) query = query.Where(predicate);
-        if (!string.IsNullOrEmpty(includeProperties))
-        {
-            foreach (var includeProperty in includeProperties.Split
-                         (new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                query = query.Include(includeProperty);
-            }
-        }
-        if (!string.IsNullOrEmpty(sortBy))
-        {
-            query = ApplySort(query, sortBy, isAsc);
-        }
-        else if (orderBy != null)
-        {
-            query = orderBy(query);
-        }
-        return query.AsNoTracking().Select(selector).ToPaginateAsync(page, size, 1);
-    }
-
     private IQueryable<T> PerformManualJoin(IQueryable<T> query)
     {
         var parameter = Expression.Parameter(typeof(T), "x");
@@ -144,6 +113,7 @@ public class GenericRepository<T>: IGenericRepository<T>, IAsyncDisposable where
 
     public async Task<ICollection<T>> GetListAsync(Expression<Func<T, bool>> predicate = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null)
     {
+        
         IQueryable<T> query = _dbSet;
         if (include != null) query = include(query);
         if (predicate != null) query = query.Where(predicate);

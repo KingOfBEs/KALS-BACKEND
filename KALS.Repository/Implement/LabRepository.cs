@@ -9,7 +9,7 @@ namespace KALS.Repository.Implement;
 
 public class LabRepository: GenericRepository<Lab>, ILabRepository
 {
-    public LabRepository(KitAndLabDbContext context) : base(context)
+    public LabRepository(DbContext context) : base(context)
     {
     }
 

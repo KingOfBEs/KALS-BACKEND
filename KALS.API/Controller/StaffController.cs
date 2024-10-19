@@ -42,7 +42,7 @@ public class StaffController: BaseController<StaffController>
     [HttpPost(ApiEndPointConstant.Staff.StaffEndpoint)]
     [ProducesResponseType(typeof(StaffResponse), statusCode: StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> CreateStaffAsync([FromBody] CreateStaffRequest request)
+    public async Task<IActionResult> CreateStaff([FromBody] CreateStaffRequest request)
     {
         var staff = await _userService.CreateStaffAsync(request);
         if (staff == null)
@@ -51,6 +51,14 @@ public class StaffController: BaseController<StaffController>
             return Problem($"{MessageConstant.User.CreateStaffFail}: {request.Username}");
         }
         _logger.LogInformation($"Create new staff successful with {request.Username}");
-        return CreatedAtAction(nameof(CreateStaffAsync), staff);
+        return CreatedAtAction(nameof(CreateStaff), staff);
     }
+    [HttpGet(ApiEndPointConstant.Staff.StaffById)]
+    [ProducesResponseType(typeof(StaffResponse), statusCode: StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetStaffById(Guid id)
+    {
+        var staff = await _userService.GetStaffById(id);
+        return Ok(staff);
+    }
+    
 }

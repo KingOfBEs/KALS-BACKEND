@@ -36,43 +36,6 @@ public class ProductService: BaseService<ProductService>, IProductService
 
     public async Task<IPaginate<GetProductWithCatogoriesResponse>> GetAllProductPagingAsync(int page, int size, ProductFilter? filter, string? sortBy, bool isAsc)
     {
-        // var products = await _unitOfWork.GetRepository<Product>().GetPagingListAsync(
-        //     selector: p => new GetProductWithCatogoriesResponse()
-        //     {
-        //         Id = p.Id,
-        //         Name = p.Name,
-        //         Description = p.Description,
-        //         Price = p.Price,
-        //         Quantity = p.Quantity,
-        //         CreatedAt = p.CreatedAt,
-        //         ModifiedAt = p.ModifiedAt,
-        //         IsHidden = p.IsHidden,
-        //         IsKit = p.IsKit,
-        //         Categories = p.ProductCategories.Any(pc => pc.ProductId == p.Id) ? p.ProductCategories.Select(pc => new CategoryResponse()
-        //         {
-        //             Id = pc.Category.Id,
-        //             Name = pc.Category.Name,
-        //             Description = pc.Category.Description,
-        //             CreatedAt = pc.Category.CreatedAt,
-        //             ModifiedAt = pc.Category.ModifiedAt,
-        //         }).ToList() : null,
-        //         ProductImages = p.ProductImages.Select(pi => new ProductImageResponse()
-        //         {
-        //             Id = pi.Id,
-        //             ImageUrl = pi.ImageUrl,
-        //             isMain = pi.isMain
-        //         }).ToList()
-        //     },
-        //     predicate: p => !p.IsHidden,
-        //     // orderBy: p => p.OrderByDescending(p => p.CreatedAt),
-        //     page: page,
-        //     size: size,
-        //     include: p => p.Include(p => p.ProductCategories)
-        //         .ThenInclude(pc => pc.Category),
-        //     filter: filter,
-        //     sortBy: sortBy,
-        //     isAsc: isAsc
-        // );
         var products = await _productRepository.GetProductPagingAsync(page, size, filter, sortBy, isAsc);
         var productResponse = _mapper.Map<IPaginate<GetProductWithCatogoriesResponse>>(products);
         return productResponse;
@@ -81,41 +44,6 @@ public class ProductService: BaseService<ProductService>, IProductService
     public async Task<GetProductDetailResponse> GetProductByIdAsync(Guid id)
     {
         if(id == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Product.ProductIdNotNull);
-        // var product = await _unitOfWork.GetRepository<Product>().SingleOrDefaultAsync(
-        //     selector: p => new GetProductDetailResponse()
-        //     {
-        //         Id = p.Id,
-        //         Name = p.Name,
-        //         Description = p.Description,
-        //         Price = p.Price,
-        //         Quantity = p.Quantity,
-        //         CreatedAt = p.CreatedAt,
-        //         ModifiedAt = p.ModifiedAt,
-        //         IsHidden = p.IsHidden,
-        //         IsKit = p.IsKit,
-        //         ChildProducts = p.ChildProducts.Select(pr => pr.ChildProduct).Select(cp => new GetProductResponse()
-        //         {
-        //             Id = cp.Id,
-        //             Name = cp.Name,
-        //             Description = cp.Description,
-        //             Quantity = cp.Quantity,
-        //             Price = cp.Price,
-        //             IsHidden = cp.IsHidden,
-        //             IsKit = cp.IsKit,
-        //             CreatedAt = cp.CreatedAt,
-        //             ModifiedAt = cp.ModifiedAt
-        //         }).ToList(),
-        //         ProductImages = p.ProductImages.Select(pi => new ProductImageResponse()
-        //         {
-        //             Id = pi.Id,
-        //             ImageUrl = pi.ImageUrl,
-        //             isMain = pi.isMain
-        //         }).ToList()
-        //     },
-        //     predicate: p => p.Id == id,
-        //     include: p => p.Include(p => p.ChildProducts)
-        //         .ThenInclude(cp => cp.ChildProduct)
-        // );
         var p = await _productRepository.GetProductByIdAsync(id);
         var productResponse = new GetProductDetailResponse()
         {
@@ -278,19 +206,15 @@ public class ProductService: BaseService<ProductService>, IProductService
         if(parentId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Product.ProductIdNotNull);
         if (!request.ChildProductIds.Any())
             throw new BadHttpRequestException(MessageConstant.Product.ChildProductIdNotNull);
-        // var parentProduct = await _unitOfWork.GetRepository<Product>().SingleOrDefaultAsync(
-        //     predicate: p => p.Id == parentId,
-        //     include: p => p.Include(p => p.ChildProducts)
-        //         .ThenInclude(pr => pr.ChildProduct)
-        // );
+        
         var parentProduct = await _productRepository.GetProductByIdAsync(parentId);
         
         if(parentProduct == null) throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
-
-        var currentChildProductIds = parentProduct.ChildProducts!.Select(pr => pr.ChildProductId).ToList();
-        var addChildProductIds = request.ChildProductIds.Except(currentChildProductIds);
-        var removeChildProductIds = currentChildProductIds.Except(request.ChildProductIds);
-
+        
+        // var currentChildProductIds = parentProduct.ChildProducts!.Select(pr => pr.ChildProductId).ToList();
+        // var addChildProductIds = request.ChildProductIds.Except(currentChildProductIds);
+        // var removeChildProductIds = currentChildProductIds.Except(request.ChildProductIds);
+        var (addChildProductIds, removeChildProductIds) = await _productRelationshipRepository.GetNewAndRemoveChildProductIdsAsync(parentId, request.ChildProductIds);
         foreach (var addChildProductId in addChildProductIds)
         {
             var addChildProduct = await _productRepository.GetProductByIdAsync(addChildProductId);
@@ -305,8 +229,11 @@ public class ProductService: BaseService<ProductService>, IProductService
                 {
                     foreach (var removeChildProductId in removeChildProductIds)
                     {
-                        var removeChildProduct = parentProduct.ChildProducts
-                            .FirstOrDefault(pr => pr.ChildProductId == removeChildProductId);
+                        // var removeChildProduct = parentProduct.ChildProducts
+                        //     .FirstOrDefault(pr => pr.ChildProductId == removeChildProductId);
+                        var removeChildProduct =
+                            await _productRelationshipRepository.GetChildProductByIdAsync(parentId,
+                                removeChildProductId);
                         _productRelationshipRepository.DeleteAsync(removeChildProduct);
                     }
                 }
@@ -314,7 +241,7 @@ public class ProductService: BaseService<ProductService>, IProductService
                 {
                     foreach (var addChildProductId in addChildProductIds)
                     {
-                        var addChildProduct = await _productRepository.GetProductByIdAsync(addChildProductId);
+                        // var addChildProduct = await _productRepository.GetProductByIdAsync(addChildProductId);
                         await _productRelationshipRepository.InsertAsync(
                             new ProductRelationship()
                             {
@@ -352,30 +279,7 @@ public class ProductService: BaseService<ProductService>, IProductService
     public async Task<IPaginate<GetProductResponse>> GetProductByCategoryIdAsync(Guid categoryId, int page, int size)
     {
         if (categoryId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Category.CategoryIdNotNull);
-        // var products = await _unitOfWork.GetRepository<Product>().GetPagingListAsync(
-        //     selector: p => new GetProductResponse()
-        //     {
-        //         Id = p.Id,
-        //         Name = p.Name,
-        //         Description = p.Description,
-        //         Quantity = p.Quantity,
-        //         Price = p.Price,
-        //         IsHidden = p.IsHidden,
-        //         IsKit = p.IsKit,
-        //         CreatedAt = p.CreatedAt,
-        //         ModifiedAt = p.ModifiedAt,
-        //         ProductImages = p.ProductImages.Select(pi => new ProductImageResponse()
-        //         {
-        //             Id = pi.Id,
-        //             ImageUrl = pi.ImageUrl,
-        //             isMain = pi.isMain
-        //         }).ToList(),
-        //     },
-        //     predicate: p => p.ProductCategories.Any(pc => pc.CategoryId == categoryId),
-        //     page: page,
-        //     size: size,
-        //     include: p => p.Include(p => p.ProductImages)
-        // );
+        
         var products = await _productRepository.GetProductsPagingByCategoryId(categoryId, page, size);
         var productResponses = _mapper.Map<IPaginate<GetProductResponse>>(products);
         return productResponses;

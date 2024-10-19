@@ -1,12 +1,13 @@
 using KALS.Domain.DataAccess;
 using KALS.Domain.Entities;
 using KALS.Repository.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace KALS.Repository.Implement;
 
 public class UserRepository: GenericRepository<User>, IUserRepository
 {
-    public UserRepository(KitAndLabDbContext context) : base(context)
+    public UserRepository(DbContext context) : base(context)
     {
     }
 

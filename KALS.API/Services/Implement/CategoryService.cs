@@ -77,12 +77,12 @@ public class CategoryService: BaseService<CategoryService>, ICategoryService
         var category = await _categoryRepository.GetCategoryByIdAsync(categoryId);
         if (category == null) throw new BadHttpRequestException(MessageConstant.Category.CategoryNotFound);
         
-        var currentProductIds = category.ProductCategories
-            .Select(pc => pc.ProductId)
-            .ToList();
-        var newProductIds = request.ProductIds.Except(currentProductIds).ToList();
-        var removeProductIds = currentProductIds.Except(request.ProductIds).ToList();
-        
+        // var currentProductIds = category.ProductCategories
+        //     .Select(pc => pc.ProductId)
+        //     .ToList();
+        // var newProductIds = request.ProductIds.Except(currentProductIds).ToList();
+        // var removeProductIds = currentProductIds.Except(request.ProductIds).ToList();
+        var (newProductIds, removeProductIds) = await _productCategoryRepository.GetNewAndRemoveProductIdsAsync(categoryId, request.ProductIds);
         foreach (var newProductId in newProductIds)
         {
             var newProduct = await _productRepository.GetProductByIdAsync(newProductId);
@@ -98,9 +98,11 @@ public class CategoryService: BaseService<CategoryService>, ICategoryService
             {
                 if (removeProductIds.Any())
                 {
-                    var removeProductCategories = category.ProductCategories
-                        .Where(pc => removeProductIds.Contains(pc.ProductId))
-                        .ToList();
+                    // var removeProductCategories = category.ProductCategories
+                    //     .Where(pc => removeProductIds.Contains(pc.ProductId))
+                    //     .ToList();
+                    var removeProductCategories =
+                        await _productCategoryRepository.GetProductCategoriesByProductIds(removeProductIds);
                     foreach (var removeProductCategory in removeProductCategories)
                     {
                         _productCategoryRepository.DeleteAsync(removeProductCategory);

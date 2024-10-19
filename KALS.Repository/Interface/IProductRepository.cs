@@ -15,4 +15,7 @@ public interface IProductRepository: IGenericRepository<Product>
     Task<ICollection<Product>> GetListProductsByParentIdAsync(Guid parentId);
     
     Task<IPaginate<Product>> GetProductsPagingByCategoryId(Guid categoryId, int page, int size);
+    
+    Task<(List<Guid> newChildProducts, List<Guid> removeChildProducts)> GetNewAndRemoveChildProductIdsAsync(Guid parentId, List<Guid> requestedChildProductIds);
+    
 }

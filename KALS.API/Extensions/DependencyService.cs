@@ -46,6 +46,9 @@ public static class DependencyService
         IConfiguration configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).Build();
         service.AddDbContext<KitAndLabDbContext>(options => options.UseSqlServer(CreateConnectionString(configuration)));
+        service.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        service.AddScoped<DbContext, KitAndLabDbContext>();
+        
         return service;
     }
 
@@ -75,6 +78,7 @@ public static class DependencyService
         service.AddScoped<ISupportMessageImageRepository, SupportMessageImageRepository>();
         service.AddHttpClient<IFirebaseService, FirebaseService>();
         service.AddScoped<IGoogleDriveService, GoogleDriveService>();
+        service.AddScoped<IRedisService, RedisService>();
         return service;
     }
 

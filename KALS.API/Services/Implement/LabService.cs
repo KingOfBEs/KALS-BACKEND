@@ -39,6 +39,7 @@ public class LabService: BaseService<LabService>, ILabService
         _userRepository = userRepository;
         _labMemberRepository = labMemberRepository;
         _firebaseService = firebaseService;
+        _googleDriveService = googleDriveService;
     }
 
     public async Task<GetProductResponse> AssignLabToProductAsync(Guid productId, AssignLabsToProductRequest request)
@@ -46,16 +47,14 @@ public class LabService: BaseService<LabService>, ILabService
         if(productId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Product.ProductIdNotNull);
         var product = await _productRepository.GetProductByIdAsync(productId);
         if(product == null) throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
-
-        var currentLabIds = product.LabProducts.Select(lp => lp.LabId).ToList();
-        var newLabIds = request.LabIds.Except(currentLabIds).ToList();
-        var removeLabIds = currentLabIds.Except(request.LabIds).ToList();
-
+        
+        var (newLabIds, removeLabIds) = await _labProductRepository.GetNewAndRemoveLabIdsAsync(productId, request.LabIds);
         var members = await _memberRepository.GetMembersOrderProductAsync(productId);
         if (members != null)
         {
-            var labMembers = await _labMemberRepository.GetListAsync();
-            var removeLabMembers = labMembers.Where(l => removeLabIds.Contains(l.LabId));
+            // var labMembers = await _labMemberRepository.GetListAsync();
+            // var removeLabMembers = labMembers.Where(l => removeLabIds.Contains(l.LabId));
+            var removeLabMembers = await _labMemberRepository.GetLabMembersByLabIds(removeLabIds);
             if (removeLabIds.Any())
             {
                 foreach (var labMember in removeLabMembers)
@@ -63,13 +62,14 @@ public class LabService: BaseService<LabService>, ILabService
                     _labMemberRepository.DeleteAsync(labMember);
                 }
             }
-            if (labMembers.Any() && newLabIds.Any())
+            if (newLabIds.Any())
             {
                 foreach (var member in members)
                 {
                     foreach (var newLabId in newLabIds)
                     {
-                        bool isMemberInLab = labMembers.Any(lm => lm.LabId == newLabId && lm.MemberId == member.Id);
+                        // bool isMemberInLab = labMembers.Any(lm => lm.LabId == newLabId && lm.MemberId == member.Id);
+                        bool isMemberInLab = await _labMemberRepository.IsMemberInLab(member.Id, newLabId);
                         if (!isMemberInLab)
                         {
                             await _labMemberRepository.InsertAsync(
@@ -86,7 +86,8 @@ public class LabService: BaseService<LabService>, ILabService
         }
         if (removeLabIds.Any())
         {
-            var removeLabProducts = product.LabProducts.Where(lp => removeLabIds.Contains(lp.LabId)).ToList();
+            // var removeLabProducts = product.LabProducts.Where(lp => removeLabIds.Contains(lp.LabId)).ToList();
+            var removeLabProducts = await _labProductRepository.GetLabProductsByLabIds(removeLabIds);
             foreach (var removeLabProduct in removeLabProducts)
             {
                 _labProductRepository.DeleteAsync(removeLabProduct);

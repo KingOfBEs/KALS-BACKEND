@@ -7,7 +7,7 @@ namespace KALS.Repository.Implement;
 
 public class PaymentRepository: GenericRepository<Payment>, IPaymentRepository
 {
-    public PaymentRepository(KitAndLabDbContext context) : base(context)
+    public PaymentRepository(DbContext context) : base(context)
     {
         
     }

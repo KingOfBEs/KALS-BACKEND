@@ -7,7 +7,7 @@ namespace KALS.Repository.Implement;
 
 public class OrderItemRepository: GenericRepository<OrderItem>, IOrderItemRepository
 {
-    public OrderItemRepository(KitAndLabDbContext context) : base(context)
+    public OrderItemRepository(DbContext context) : base(context)
     {
     }
 

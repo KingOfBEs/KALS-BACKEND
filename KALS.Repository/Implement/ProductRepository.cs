@@ -9,7 +9,7 @@ namespace KALS.Repository.Implement;
 
 public class ProductRepository: GenericRepository<Product>, IProductRepository
 {
-    public ProductRepository(KitAndLabDbContext context) : base(context)
+    public ProductRepository(DbContext context) : base(context)
     {
     }
 
@@ -93,4 +93,16 @@ public class ProductRepository: GenericRepository<Product>, IProductRepository
         );
         return products;
     }
+
+    public async Task<(List<Guid> newChildProducts, List<Guid> removeChildProducts)> GetNewAndRemoveChildProductIdsAsync(Guid parentId, List<Guid> requestedChildProductIds)
+    {
+        var product = await SingleOrDefaultAsync(
+            predicate: p => p.Id == parentId);
+
+        var currentChildProductIds = product.ChildProducts!.Select(pr => pr.ChildProductId).ToList();
+        var addChildProductIds = requestedChildProductIds.Except(currentChildProductIds).ToList();
+        var removeChildProductIds = currentChildProductIds.Except(requestedChildProductIds).ToList();
+        return (addChildProductIds, requestedChildProductIds);
+    }
+    
 }

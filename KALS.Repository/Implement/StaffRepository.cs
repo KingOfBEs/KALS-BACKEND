@@ -9,7 +9,7 @@ namespace KALS.Repository.Implement;
 
 public class StaffRepository: GenericRepository<Staff>, IStaffRepository
 {
-    public StaffRepository(KitAndLabDbContext context) : base(context)
+    public StaffRepository(DbContext context) : base(context)
     {
         
     }
@@ -39,6 +39,15 @@ public class StaffRepository: GenericRepository<Staff>, IStaffRepository
     {
         var staff = await SingleOrDefaultAsync(
             predicate: s => s.UserId == userId,
+            include: s => s.Include(s => s.User)
+        );
+        return staff;
+    }
+
+    public async Task<Staff> GetStaffByIdAsync(Guid id)
+    {
+        var staff = await SingleOrDefaultAsync(
+            predicate: s => s.Id == id,
             include: s => s.Include(s => s.User)
         );
         return staff;

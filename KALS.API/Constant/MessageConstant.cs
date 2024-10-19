@@ -21,6 +21,7 @@ public class MessageConstant
         public const string UpdateStaffFail = "Cập nhật staff không thành công";
         public const string InsertUserFail = "Thêm user không thành công";
         public const string CreateStaffFail = "Tạo staff không thành công";
+        public const string StaffIdNotNull = "Id staff không được để trống";
     }
 
     public static class Order

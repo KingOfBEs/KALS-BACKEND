@@ -34,11 +34,11 @@ public class MemberRepository: GenericRepository<Member>, IMemberRepository
                 UserId = m.UserId,
                 User = m.User,
                 Address = m.Address,
-                Ward = m.Ward,
+                Commune = m.Commune,
                 District = m.District,
                 Province = m.Province,
                 ProvinceCode = m.ProvinceCode,
-                WardCode = m.WardCode,
+                CommuneCode = m.CommuneCode,
                 DistrictCode = m.DistrictCode,
                 LabMembers = m.LabMembers
             },

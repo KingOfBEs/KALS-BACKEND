@@ -7,7 +7,7 @@ namespace KALS.Repository.Implement;
 
 public class LabMemberRepository: GenericRepository<LabMember>, ILabMemberRepository
 {
-    public LabMemberRepository(KitAndLabDbContext context) : base(context)
+    public LabMemberRepository(DbContext context) : base(context)
     {
     }
 
@@ -19,5 +19,21 @@ public class LabMemberRepository: GenericRepository<LabMember>, ILabMemberReposi
                 .Include(lm => lm.Member)
         );
         return labMember;
+    }
+
+    public async Task<ICollection<LabMember>> GetLabMembersByLabIds(List<Guid> labIds)
+    {
+        var labMembers = await GetListAsync(
+            predicate: lm => labIds.Contains(lm.LabId)
+        );
+        return labMembers;
+    }
+
+    public async Task<bool> IsMemberInLab(Guid memberId, Guid labId)
+    {
+        var labMember = await SingleOrDefaultAsync(
+            predicate: lm => lm.LabId == labId && lm.MemberId == memberId
+        );
+        return labMember != null;
     }
 }

@@ -7,7 +7,7 @@ namespace KALS.Repository.Implement;
 
 public class ProductImageRepository: GenericRepository<ProductImage>, IProductImageRepository
 {
-    public ProductImageRepository(KitAndLabDbContext context) : base(context)
+    public ProductImageRepository(DbContext context) : base(context)
     {
     }
 

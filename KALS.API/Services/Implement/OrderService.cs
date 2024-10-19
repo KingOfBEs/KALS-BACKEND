@@ -100,9 +100,6 @@ public class OrderService: BaseService<OrderService>, IOrderService
     public async Task<OrderResponse> UpdateOrderStatusCompleted(Guid orderId)
     {
         if (orderId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Order.OrderIdNotNull);
-        // var order = await _unitOfWork.GetRepository<Order>().SingleOrDefaultAsync(
-        //     predicate: o => o.Id == orderId
-        // );
         var order = await _orderRepository.GetOrderByIdAsync(orderId);
         if (order == null) throw new BadHttpRequestException(MessageConstant.Order.OrderNotFound);
 

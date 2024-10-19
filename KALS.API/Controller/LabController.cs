@@ -48,7 +48,7 @@ public class LabController: BaseController<LabController>
     [HttpPatch(ApiEndPointConstant.Lab.LabById)]
     [ProducesResponseType(typeof(LabResponse), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdateLabById(Guid id, [FromBody] UpdateLabRequest request)
+    public async Task<IActionResult> UpdateLabById(Guid id, [FromForm] UpdateLabRequest request)
     {
         var response = await _labService.UpdateLabAsync(id, request);
         if (response == null)

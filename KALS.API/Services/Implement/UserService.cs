@@ -192,13 +192,13 @@ public class UserService : BaseService<UserService>, IUserService
         var member = await _memberRepository.GetMemberByUserId(id);
         if (member == null) throw new BadHttpRequestException(MessageConstant.User.MemberNotFound);
         request.TrimString();
-        member.Ward = string.IsNullOrEmpty(request.Ward) ? member.Ward : request.Ward;
+        member.Commune = string.IsNullOrEmpty(request.Commune) ? member.Commune : request.Commune;
         member.Province = string.IsNullOrEmpty(request.Province) ? member.Province : request.Province;
         member.District = string.IsNullOrEmpty(request.District) ? member.District : request.District;
         member.Address = string.IsNullOrEmpty(request.Address) ? member.Address : request.Address;
         member.ProvinceCode = request.ProvinceCode ?? member.ProvinceCode;
         member.DistrictCode = request.DistrictCode ?? member.DistrictCode;
-        member.WardCode = request.WardCode ?? member.WardCode;
+        member.CommuneCode = request.CommuneCode ?? member.CommuneCode;
         member.User.Username = string.IsNullOrEmpty(request.Username) ? member.User.Username : request.Username;
         member.User.FullName = string.IsNullOrEmpty(request.FullName) ? member.User.FullName : request.FullName;
         
@@ -222,13 +222,13 @@ public class UserService : BaseService<UserService>, IUserService
         var member = await _memberRepository.GetMemberByUserId(userId);
         if (member == null) throw new BadHttpRequestException(MessageConstant.User.MemberNotFound);
         request.TrimString();
-        member.Ward = string.IsNullOrEmpty(request.Ward) ? member.Ward : request.Ward;
+        member.Commune = string.IsNullOrEmpty(request.Commune) ? member.Commune : request.Commune;
         member.Province = string.IsNullOrEmpty(request.Province) ? member.Province : request.Province;
         member.District = string.IsNullOrEmpty(request.District) ? member.District : request.District;
         member.Address = string.IsNullOrEmpty(request.Address) ? member.Address : request.Address;
         member.ProvinceCode = request.ProvinceCode ?? member.ProvinceCode;
         member.DistrictCode = request.DistrictCode ?? member.DistrictCode;
-        member.WardCode = request.WardCode ?? member.WardCode;
+        member.CommuneCode = request.CommuneCode ?? member.CommuneCode;
         member.User.Username = string.IsNullOrEmpty(request.Username) ? member.User.Username : request.Username;
         member.User.FullName = string.IsNullOrEmpty(request.FullName) ? member.User.FullName : request.FullName;
         
@@ -241,14 +241,10 @@ public class UserService : BaseService<UserService>, IUserService
         return response;
     }
 
-    public async Task<UserResponse> UpdateStaffAsync(Guid id, UpdateStaffRequest request)
+    public async Task<UserResponse> UpdateStaffAsync(Guid staffId, UpdateStaffRequest request)
     {
-        if (id == Guid.Empty) throw new BadHttpRequestException(MessageConstant.User.UserIdNotNull);
-        // var staff = await _unitOfWork.GetRepository<Staff>().SingleOrDefaultAsync(
-        //     predicate: s => s.UserId == id,
-        //     include: s => s.Include(s => s.User)
-        // );
-        var staff = await _staffRepository.GetStaffByUserIdAsync(id);
+        if (staffId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.User.StaffIdNotNull);
+        var staff = await _staffRepository.GetStaffByIdAsync(staffId);
         if (staff == null) throw new BadHttpRequestException(MessageConstant.User.StaffNotFound);
         request.TrimString();
         staff.Type = (StaffType)(!request.Type.HasValue ? staff.Type : request.Type);
@@ -284,8 +280,14 @@ public class UserService : BaseService<UserService>, IUserService
         var isSuccess = await _staffRepository.SaveChangesAsync();
         if(isSuccess) return _mapper.Map<StaffResponse>(staff);
         return response;
-        
-        
-        
+    }
+
+    public async Task<StaffResponse> GetStaffById(Guid id)
+    {
+        if (id == Guid.Empty) throw new BadHttpRequestException(MessageConstant.User.StaffIdNotNull);
+        var staff = await _staffRepository.GetStaffByIdAsync(id);
+        if (staff == null) throw new BadHttpRequestException(MessageConstant.User.StaffNotFound);
+        var response = _mapper.Map<StaffResponse>(staff);
+        return response;
     }
 }

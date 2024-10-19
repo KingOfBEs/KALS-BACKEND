@@ -10,7 +10,7 @@ namespace KALS.Repository.Implement;
 
 public class SupportRequestRepository: GenericRepository<SupportRequest>, ISupportRequestRepository
 {
-    public SupportRequestRepository(KitAndLabDbContext context) : base(context)
+    public SupportRequestRepository(DbContext context) : base(context)
     {
     }
 

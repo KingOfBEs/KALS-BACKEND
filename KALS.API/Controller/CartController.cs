@@ -20,7 +20,7 @@ public class CartController: BaseController<CartController>
     [HttpPost(ApiEndPointConstant.Cart.CartEndPoint)]
     [ProducesResponseType(typeof(ICollection<CartModelResponse>), statusCode: StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> AddToCartAsync([FromBody] CartModel request)
+    public async Task<IActionResult> AddToCart([FromBody] CartModel request)
     {
         var response = await _cartService.AddToCartAsync(request);
         if (response == null)
@@ -29,7 +29,7 @@ public class CartController: BaseController<CartController>
             return Problem($"{MessageConstant.Cart.AddToCartFail}: {request.ProductId}");
         }
         _logger.LogInformation($"Add to cart successful with {request.ProductId}");
-        return CreatedAtAction(nameof(AddToCartAsync), response);
+        return CreatedAtAction(nameof(AddToCart), response);
     }
     [HttpGet(ApiEndPointConstant.Cart.CartEndPoint)]
     [ProducesResponseType(typeof(ICollection<CartModelResponse>), statusCode: StatusCodes.Status200OK)]
