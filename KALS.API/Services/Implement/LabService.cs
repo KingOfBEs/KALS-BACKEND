@@ -116,11 +116,9 @@ public class LabService: BaseService<LabService>, ILabService
 
     public async Task<IPaginate<LabResponse>> GetLabsAsync(int page, int size, string? searchName)
     {
-        var roleUser = GetRoleFromJwt();
-        if (roleUser == null) throw new UnauthorizedAccessException(MessageConstant.User.UserNotFound);
-        var roleUserEnum = EnumUtil.ParseEnum<RoleEnum>(roleUser);
+        var role = GetRoleFromJwt();
         IPaginate<LabResponse> labsResponse;
-        switch (roleUserEnum)
+        switch (role)
         {
             case RoleEnum.Member:
                 var userId = GetUserIdFromJwt();

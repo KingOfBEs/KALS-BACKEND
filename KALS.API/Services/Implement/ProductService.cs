@@ -37,8 +37,7 @@ public class ProductService: BaseService<ProductService>, IProductService
 
     public async Task<IPaginate<GetProductWithCatogoriesResponse>> GetAllProductPagingAsync(int page, int size, ProductFilter? filter, string? sortBy, bool isAsc)
     {
-        var roleString = GetRoleFromJwt();
-        var role = EnumUtil.ParseEnum<RoleEnum>(roleString);
+        var role = GetRoleFromJwt();
         IPaginate<GetProductWithCatogoriesResponse> response = null;
         switch (role)
         {
@@ -206,9 +205,7 @@ public class ProductService: BaseService<ProductService>, IProductService
     public async Task<GetProductResponse> UpdateProductByIdAsync(Guid id, UpdateProductRequest request)
     {
         if(id == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Product.ProductIdNotNull);
-        // var product = await _unitOfWork.GetRepository<Product>().SingleOrDefaultAsync(
-        //     predicate: p => p.Id == id
-        // );
+        
         var product = await _productRepository.GetProductByIdAsync(id);
         if(product == null) throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
         product.Name = string.IsNullOrEmpty(request.Name) ? product.Name : request.Name;
@@ -217,6 +214,13 @@ public class ProductService: BaseService<ProductService>, IProductService
         product.Quantity = (int)(request.Quantity == null ? product.Quantity : request.Quantity);
         product.IsHidden = (bool) (request.IsHidden == null ? product.IsHidden : request.IsHidden);
         product.IsKit = (bool) (request.IsKit == null ? product.IsKit : request.IsKit);
+        if (request.IsKit == false && product.ChildProducts!.Any())
+        { 
+            foreach (var childProduct in product.ChildProducts!)
+            { 
+                _productRelationshipRepository.DeleteAsync(childProduct); 
+            }
+        }
         product.ModifiedAt = TimeUtil.GetCurrentSEATime();
         
         // _unitOfWork.GetRepository<Product>().UpdateAsync(product);
@@ -236,7 +240,7 @@ public class ProductService: BaseService<ProductService>, IProductService
         var parentProduct = await _productRepository.GetProductByIdAsync(parentId);
         
         if(parentProduct == null) throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
-        
+        if (parentProduct.IsKit == false) throw new BadHttpRequestException(MessageConstant.Product.ProductIsNotKit);
         // var currentChildProductIds = parentProduct.ChildProducts!.Select(pr => pr.ChildProductId).ToList();
         // var addChildProductIds = request.ChildProductIds.Except(currentChildProductIds);
         // var removeChildProductIds = currentChildProductIds.Except(request.ChildProductIds);
@@ -300,9 +304,7 @@ public class ProductService: BaseService<ProductService>, IProductService
     public async Task<ICollection<GetProductResponse>> GetChildProductsByParentIdAsync(Guid parentId)
     {
         if(parentId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Product.ParentProductIdNotNull);
-        // var childProducts = await _unitOfWork.GetRepository<Product>().GetListAsync(
-        //     predicate: p => p.ChildProducts.Any(cp => cp.ParentProductId == parentId)
-        // );
+        
         var childProducts = await _productRepository.GetListProductsByParentIdAsync(parentId);
         var childProductResponses = _mapper.Map<ICollection<GetProductResponse>>(childProducts);
         return childProductResponses;

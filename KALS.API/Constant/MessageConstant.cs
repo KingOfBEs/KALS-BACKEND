@@ -45,7 +45,8 @@ public class MessageConstant
         public const string ChildProductIdNotNull = "Id của sản phẩm con không được để trống";
         public const string ProductOutOfStock = "Sản phẩm đã hết hàng";
         public const string CreateProductFailed = "Tạo sản phẩm không thành công";
-        
+        public const string ProductIsNotKit = "Sản phẩm không phải là Kit";
+
     }
     public static class Lab
     {

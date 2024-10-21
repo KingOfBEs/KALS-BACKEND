@@ -23,10 +23,14 @@ public class BaseService<T> where T : class
         _httpContextAccessor = httpContextAccessor;
         _configuration = configuration;
     }
-    protected string GetRoleFromJwt()
+    protected RoleEnum GetRoleFromJwt()
     {
-        string role = _httpContextAccessor?.HttpContext?.User.FindFirstValue(ClaimTypes.Role);
+        string roleString = _httpContextAccessor?.HttpContext?.User.FindFirstValue(ClaimTypes.Role);
+        if (string.IsNullOrEmpty(roleString)) return RoleEnum.None;
+        
+        Enum.TryParse<RoleEnum>(roleString, out RoleEnum role);
         return role;
+        
     }
 
     protected Guid GetUserIdFromJwt()

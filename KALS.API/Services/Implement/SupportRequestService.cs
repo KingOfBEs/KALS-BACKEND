@@ -183,10 +183,9 @@ public class SupportRequestService: BaseService<SupportRequestService>, ISupport
 
     public async Task<IPaginate<SupportRequestResponse>> GetSupportRequestPagingAsync(int page, int size, SupportRequestFilter? filter, string? sortBy, bool isAsc)
     {
-        var roleString = GetRoleFromJwt();
-        if(roleString == null) throw new UnauthorizedAccessException(MessageConstant.User.RoleNotFound);
+        var role = GetRoleFromJwt();
         
-        var role = Enum.Parse<RoleEnum>(roleString);
+        
         IPaginate<SupportRequest> supportRequests;
         switch (role)
         {

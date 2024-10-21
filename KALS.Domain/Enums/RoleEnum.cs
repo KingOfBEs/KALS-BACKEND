@@ -5,4 +5,5 @@ public enum RoleEnum
     Manager,
     Staff,
     Member,
+    None,
 }

@@ -38,56 +38,20 @@ public class OrderService: BaseService<OrderService>, IOrderService
         var userId = GetUserIdFromJwt();
         if (userId == Guid.Empty) throw new UnauthorizedAccessException(MessageConstant.User.UserNotFound);
         var role = GetRoleFromJwt();
-
-        RoleEnum roleEnum = EnumUtil.ParseEnum<RoleEnum>(role);
+        
         IPaginate<OrderResponse> orderResponses;
-        switch (roleEnum)
+        switch (role)
         {
             case RoleEnum.Member:
-                // var member = await _unitOfWork.GetRepository<Member>().SingleOrDefaultAsync(
-                //     predicate: x => x.UserId == userId
-                // );
                 var member = await _memberRepository.GetMemberByUserId(userId);
                 if(member == null) throw new BadHttpRequestException(MessageConstant.User.UserNotFound);
-                //  orders = await _unitOfWork.GetRepository<Order>().GetPagingListAsync(
-                //     selector: o => new OrderResponse()
-                //     {
-                //         Id = o.Id,
-                //         CreatedAt = o.CreatedAt,
-                //         ModifiedAt = o.ModifiedAt,
-                //         Status = o.Status,
-                //         Total = o.Total,
-                //         Address = o.Address,
-                //     },
-                //     predicate: o => o.MemberId == member.Id,
-                //     page: page,
-                //     size: size,
-                //     filter: filter,
-                //     sortBy: sortBy,
-                //     isAsc: isAsc
-                // );
+                
                 var ordersWithMemberId = await _orderRepository.GetOrdersPagingAsyncWithMemberId(page, size, member.Id, filter, sortBy,
                     isAsc);
                 orderResponses = _mapper.Map<IPaginate<OrderResponse>>(ordersWithMemberId);
                 break;
             case RoleEnum.Manager:
             case RoleEnum.Staff:
-                // orders = await _unitOfWork.GetRepository<Order>().GetPagingListAsync(
-                //     selector: o => new OrderResponse()
-                //     {
-                //         Id = o.Id,
-                //         CreatedAt = o.CreatedAt,
-                //         ModifiedAt = o.ModifiedAt,
-                //         Status = o.Status,
-                //         Total = o.Total,
-                //         Address = o.Address,
-                //     },
-                //     page: page,
-                //     size: size,
-                //     filter: filter,
-                //     sortBy: sortBy,
-                //     isAsc: isAsc
-                // );
                 var orders = await _orderRepository.GetOrdersPagingAsync(page, size, filter, sortBy, isAsc);
                 orderResponses = _mapper.Map<IPaginate<OrderResponse>>(orders);
                 break;
