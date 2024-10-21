@@ -23,11 +23,15 @@ public class ProductRepository: GenericRepository<Product>, IProductRepository
                 .Include(p => p.ProductImages)
                 .Include(p => p.LabProducts)
                 .ThenInclude(p => p.Lab)
+                .Include(p => p.ProductCategories)
+                .ThenInclude(pc => pc.Category)
         );
         return product;
     }
 
-    public async Task<IPaginate<Product>> GetProductPagingAsync(int page, int size, IFilter<Product> filter,
+    
+
+    public async Task<IPaginate<Product>> GetProductNotHiddenPagingAsync(int page, int size, IFilter<Product>? filter,
         string? sortBy, bool isAsc)
     {
         var products = await GetPagingListAsync(
@@ -47,6 +51,35 @@ public class ProductRepository: GenericRepository<Product>, IProductRepository
                 ChildProducts = p.ChildProducts.Any(cp => cp.ParentProductId == p.Id) ? p.ChildProducts : null
             },
             predicate: p => !p.IsHidden,
+            page: page,
+            size: size,
+            include: p => p.Include(p => p.ProductCategories)
+                .ThenInclude(pc => pc.Category),
+            filter: filter,
+            sortBy: sortBy,
+            isAsc: isAsc
+        );
+        return products;
+    }
+
+    public async Task<IPaginate<Product>> GetProductPagingAsync(int page, int size, IFilter<Product>? filter, string? sortBy, bool isAsc)
+    {
+        var products = await GetPagingListAsync(
+            selector: p => new Product()
+            {
+                Id = p.Id,
+                Description = p.Description,
+                Quantity = p.Quantity,
+                Name = p.Name,
+                Price = p.Price,
+                IsHidden = p.IsHidden,
+                IsKit = p.IsKit,
+                CreatedAt = p.CreatedAt,
+                ModifiedAt = p.ModifiedAt,
+                ProductCategories = p.ProductCategories.Any(pc => pc.ProductId == p.Id) ? p.ProductCategories : null,
+                ProductImages = p.ProductImages.Any(pi => pi.ProductId == p.Id) ? p.ProductImages : null,
+                ChildProducts = p.ChildProducts.Any(cp => cp.ParentProductId == p.Id) ? p.ChildProducts : null
+            },
             page: page,
             size: size,
             include: p => p.Include(p => p.ProductCategories)

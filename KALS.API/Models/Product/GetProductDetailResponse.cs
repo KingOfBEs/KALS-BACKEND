@@ -1,3 +1,5 @@
+using KALS.API.Models.Category;
+
 namespace KALS.API.Models.Product;
 
 public class GetProductDetailResponse
@@ -13,5 +15,7 @@ public class GetProductDetailResponse
     public bool IsHidden { get; set; }
     public List<GetProductResponse>? ChildProducts { get; set; }
     
-    public ICollection<ProductImageResponse> ProductImages { get; set; }
+    public ICollection<ProductImageResponse>? ProductImages { get; set; }
+    
+    public ICollection<CategoryResponse>? Categories { get; set; }
 }

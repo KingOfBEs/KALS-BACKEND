@@ -84,7 +84,7 @@ public class UserService : BaseService<UserService>, IUserService
             User = user
         };
         // await _unitOfWork.GetRepository<User>().InsertAsync(user);
-        using (var transaction = new TransactionScope())
+        using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
         {
             try
             {

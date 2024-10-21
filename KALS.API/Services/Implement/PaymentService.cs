@@ -112,7 +112,7 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
             Amount = order.Total,
             Order = order
         };
-        using (var transaction = new TransactionScope())
+        using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
         {
             try
             {
@@ -180,7 +180,7 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
         if (paymentLinkInformation.status == PayOsStatus.PENDING.ToString())
             throw new BadHttpRequestException(MessageConstant.Payment.YourOrderIsNotPaid);
         
-        using (var transaction = new TransactionScope())
+        using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
         {
             try
             {

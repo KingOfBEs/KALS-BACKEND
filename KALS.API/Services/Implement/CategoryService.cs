@@ -92,7 +92,7 @@ public class CategoryService: BaseService<CategoryService>, ICategoryService
             }
         }
 
-        using (var transaction  = new TransactionScope())
+        using (var transaction  = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
         {
             try
             {

@@ -73,7 +73,7 @@ public class SupportRequestService: BaseService<SupportRequestService>, ISupport
             SupportRequest = supportRequest
         };
 
-        using (var transaction = new TransactionScope())
+        using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
         {
             try
             {
@@ -145,7 +145,7 @@ public class SupportRequestService: BaseService<SupportRequestService>, ISupport
             SupportRequest = supportRequest
         };
         
-        using (var transaction = new TransactionScope())
+        using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
         {
             try
             {

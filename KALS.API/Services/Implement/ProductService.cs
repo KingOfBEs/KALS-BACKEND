@@ -7,6 +7,7 @@ using KALS.API.Services.Interface;
 using KALS.API.Utils;
 using KALS.Domain.DataAccess;
 using KALS.Domain.Entities;
+using KALS.Domain.Enums;
 using KALS.Domain.Filter.FilterModel;
 using KALS.Domain.Paginate;
 using KALS.Repository.Interface;
@@ -36,9 +37,22 @@ public class ProductService: BaseService<ProductService>, IProductService
 
     public async Task<IPaginate<GetProductWithCatogoriesResponse>> GetAllProductPagingAsync(int page, int size, ProductFilter? filter, string? sortBy, bool isAsc)
     {
-        var products = await _productRepository.GetProductPagingAsync(page, size, filter, sortBy, isAsc);
-        var productResponse = _mapper.Map<IPaginate<GetProductWithCatogoriesResponse>>(products);
-        return productResponse;
+        var roleString = GetRoleFromJwt();
+        var role = EnumUtil.ParseEnum<RoleEnum>(roleString);
+        IPaginate<GetProductWithCatogoriesResponse> response = null;
+        switch (role)
+        {
+            case RoleEnum.Manager:
+            case RoleEnum.Staff:
+                var products = await _productRepository.GetProductPagingAsync(page, size, filter, sortBy, isAsc);
+                response = _mapper.Map<IPaginate<GetProductWithCatogoriesResponse>>(products);
+                break;
+            default:
+                var productsNotHidden = await _productRepository.GetProductNotHiddenPagingAsync(page, size, filter, sortBy, isAsc);
+                response = _mapper.Map<IPaginate<GetProductWithCatogoriesResponse>>(productsNotHidden);
+                break;
+        }
+        return response;
     }
 
     public async Task<GetProductDetailResponse> GetProductByIdAsync(Guid id)
@@ -74,6 +88,14 @@ public class ProductService: BaseService<ProductService>, IProductService
                 Id = pi.Id,
                 ImageUrl = pi.ImageUrl,
                 isMain = pi.isMain
+            }).ToList(),
+            Categories = p.ProductCategories.Select(pc => pc.Category).Select(c => new CategoryResponse()
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Description = c.Description,
+                CreatedAt = c.CreatedAt,
+                ModifiedAt = c.ModifiedAt
             }).ToList()
         };
         return productResponse;
@@ -104,7 +126,7 @@ public class ProductService: BaseService<ProductService>, IProductService
                     throw new BadHttpRequestException(MessageConstant.Category.CategoryNotFound);
             }
         }
-        using (var transaction = new TransactionScope())
+        using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
         {
             try
             {
@@ -225,7 +247,7 @@ public class ProductService: BaseService<ProductService>, IProductService
             if(addChildProduct == null) throw new BadHttpRequestException(MessageConstant.Product.ChildProductNotFound);
         }
 
-        using (var transaction = new TransactionScope())
+        using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
         {
             try
             {

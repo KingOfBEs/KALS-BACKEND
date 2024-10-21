@@ -30,7 +30,7 @@ public class ProductController : BaseController<ProductController>
         return Ok(response);
     }
     [HttpGet(ApiEndPointConstant.Product.ProductById)]
-    [ProducesResponseType(typeof(GetProductResponse), statusCode: StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GetProductDetailResponse), statusCode: StatusCodes.Status200OK)]
     public async Task<IActionResult> GetProductById(Guid id)
     {
         var response = await _productService.GetProductByIdAsync(id);

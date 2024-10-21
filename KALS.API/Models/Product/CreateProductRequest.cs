@@ -14,6 +14,8 @@ public class CreateProductRequest
     public int Quantity { get; set; }
     [Required]
     public bool IsKit { get; set; }
+    [Required]
+    public bool IsHidden { get; set; }
     public List<Guid>? ChildProductIds { get; set; }
     public List<Guid>? CategoryIds { get; set; }
     [Required]
