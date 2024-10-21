@@ -1,6 +1,8 @@
 using KALS.API.Constant;
 using KALS.API.Models.Product;
 using KALS.API.Services.Interface;
+using KALS.API.Validator;
+using KALS.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KALS.API.Controller;
@@ -18,6 +20,7 @@ public class ProductImageController: BaseController<ProductImageController>
     [HttpDelete(ApiEndPointConstant.ProductImage.ProductImageById)]
     [ProducesResponseType(typeof(GetProductResponse), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
     public async Task<IActionResult> DeleteProductImageById(Guid id)
     {
         var response = await _productService.DeleteProductImageById(id);

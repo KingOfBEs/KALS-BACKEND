@@ -1,6 +1,8 @@
 using KALS.API.Constant;
 using KALS.API.Models.SupportRequest;
 using KALS.API.Services.Interface;
+using KALS.API.Validator;
+using KALS.Domain.Enums;
 using KALS.Domain.Filter.FilterModel;
 using KALS.Domain.Paginate;
 using Microsoft.AspNetCore.Mvc;
@@ -19,6 +21,7 @@ public class SupportRequestController: BaseController<SupportRequestController>
     [HttpPost(ApiEndPointConstant.SupportRequest.SupportRequestEndPoint)]
     [ProducesResponseType(typeof(SupportRequestResponse), statusCode: StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Member, RoleEnum.Staff)]
     public async Task<IActionResult> CreateSupportRequest([FromForm] SupportRequest request)
     {
         var response = await _supportRequestService.CreateSupportRequest(request);
@@ -33,6 +36,7 @@ public class SupportRequestController: BaseController<SupportRequestController>
     [HttpPost(ApiEndPointConstant.SupportRequest.SupportMessage)]
     [ProducesResponseType(typeof(SupportMessageResponse), statusCode: StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Staff)]
     public async Task<IActionResult> CreateSupportMessage(Guid id , [FromForm] ResponseSupportRequest request)
     {
         var response = await _supportRequestService.ResponseSupportMessage(id, request);
@@ -46,6 +50,7 @@ public class SupportRequestController: BaseController<SupportRequestController>
     }
     [HttpGet(ApiEndPointConstant.SupportRequest.SupportRequestEndPoint)]
     [ProducesResponseType(typeof(IPaginate<SupportRequestResponse>), statusCode: StatusCodes.Status200OK)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Member, RoleEnum.Staff)]
     public async Task<IActionResult> GetSupportRequestPagingAsync(int page = 1, int size = 30, [FromQuery] SupportRequestFilter? filter = null, string? sortBy = null, bool isAsc = true)
     {
         var response = await _supportRequestService.GetSupportRequestPagingAsync(page, size, filter, sortBy, isAsc);

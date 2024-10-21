@@ -70,8 +70,7 @@ public class CartService: BaseService<CartService>, ICartService
     {
         var userId = GetUserIdFromJwt();
         if (userId == Guid.Empty) throw new UnauthorizedAccessException(MessageConstant.User.UserNotFound);
-        // var redis = ConnectionMultiplexer.Connect(_configuration.GetConnectionString("Redis"));
-        // var db = redis.GetDatabase();
+        
         var key = "Cart:" + userId;
         
         var cartData = await _redisService.GetStringAsync(key);

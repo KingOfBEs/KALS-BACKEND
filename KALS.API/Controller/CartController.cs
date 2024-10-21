@@ -2,6 +2,7 @@ using KALS.API.Constant;
 using KALS.API.Models.Cart;
 using KALS.API.Services.Interface;
 using KALS.API.Validator;
+using KALS.Domain.Enums;
 using KALS.Repository.Interface;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +21,7 @@ public class CartController: BaseController<CartController>
     [HttpPost(ApiEndPointConstant.Cart.CartEndPoint)]
     [ProducesResponseType(typeof(ICollection<CartModelResponse>), statusCode: StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Member)]
     public async Task<IActionResult> AddToCart([FromBody] CartModel request)
     {
         var response = await _cartService.AddToCartAsync(request);
@@ -33,6 +35,7 @@ public class CartController: BaseController<CartController>
     }
     [HttpGet(ApiEndPointConstant.Cart.CartEndPoint)]
     [ProducesResponseType(typeof(ICollection<CartModelResponse>), statusCode: StatusCodes.Status200OK)]
+    [CustomAuthorize(RoleEnum.Member)]
     public async Task<IActionResult> GetCartAsync()
     {
         var response = await _cartService.GetCartAsync();
@@ -42,6 +45,7 @@ public class CartController: BaseController<CartController>
     [HttpDelete(ApiEndPointConstant.Cart.CartEndPoint)]
     [ProducesResponseType(typeof(ICollection<CartModelResponse>), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Member)]
     public async Task<IActionResult> RemoveFromCartAsync()
     {
         var response = await _cartService.ClearCartAsync();
@@ -56,6 +60,7 @@ public class CartController: BaseController<CartController>
     [HttpPatch(ApiEndPointConstant.Cart.CartEndPoint)]
     [ProducesResponseType(typeof(ICollection<CartModelResponse>), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Member)]
     public async Task<IActionResult> UpdateQuantityAsync([FromBody] CartModel request)
     {
         var response = await _cartService.UpdateQuantityAsync(request);

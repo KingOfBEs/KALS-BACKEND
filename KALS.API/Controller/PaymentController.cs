@@ -2,6 +2,8 @@ using KALS.API.Constant;
 using KALS.API.Models.Cart;
 using KALS.API.Models.Payment;
 using KALS.API.Services.Interface;
+using KALS.API.Validator;
+using KALS.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KALS.API.Controller;
@@ -19,6 +21,7 @@ public class PaymentController: BaseController<PaymentController>
     [HttpPost(ApiEndPointConstant.Payment.PaymentCheckOut)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff, RoleEnum.Member)]
     public async Task<IActionResult> CheckOut([FromBody] CheckOutRequest request)
     {
             var result = await _paymentService.CheckOut(request);
@@ -33,6 +36,7 @@ public class PaymentController: BaseController<PaymentController>
     [HttpPatch(ApiEndPointConstant.Payment.PaymentEndPoint)]
     [ProducesResponseType(typeof(PaymentWithOrderResponse), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff, RoleEnum.Member)]
     public async Task<IActionResult> UpdatePaymentStatus([FromBody] UpdatePaymentOrderStatusRequest request)
     {
         var response = await _paymentService.HandlePayment(request);

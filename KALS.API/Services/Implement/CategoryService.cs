@@ -28,19 +28,6 @@ public class CategoryService: BaseService<CategoryService>, ICategoryService
 
     public async Task<IPaginate<CategoryResponse>> GetCategoriesPagingAsync(int page, int size)
     {
-        // var categories = await _unitOfWork.GetRepository<Category>().GetPagingListAsync(
-        //     selector: c => new CategoryResponse()
-        //     {
-        //         Id = c.Id,
-        //         Name = c.Name,
-        //         Description = c.Description,
-        //         CreatedAt = c.CreatedAt,
-        //         ModifiedAt = c.ModifiedAt
-        //     },
-        //     page: page,
-        //     size: size,
-        //     orderBy: c => c.OrderByDescending(c => c.CreatedAt)
-        // );
         var categories = await _categoryRepository.GetCategoriesPaginateAsync(page, size);
         var response = _mapper.Map<IPaginate<CategoryResponse>>(categories);
         return response;
@@ -49,17 +36,7 @@ public class CategoryService: BaseService<CategoryService>, ICategoryService
     public async Task<CategoryResponse> GetCategoryByIdAsync(Guid id)
     {
         if (id == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Category.CategoryIdNotNull);
-        // var category = await _unitOfWork.GetRepository<Category>().SingleOrDefaultAsync(
-        //     selector: c => new CategoryResponse()
-        //     {
-        //         Id = c.Id,
-        //         Name = c.Name,
-        //         Description = c.Description,
-        //         CreatedAt = c.CreatedAt,
-        //         ModifiedAt = c.ModifiedAt
-        //     },
-        //     predicate: c => c.Id == id
-        // );
+        
         var category = await _categoryRepository.GetCategoryByIdAsync(id);
         var categoryResponse = _mapper.Map<CategoryResponse>(category);
         return categoryResponse;

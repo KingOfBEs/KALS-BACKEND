@@ -1,6 +1,8 @@
 using KALS.API.Constant;
 using KALS.API.Models.Lab;
 using KALS.API.Services.Interface;
+using KALS.API.Validator;
+using KALS.Domain.Enums;
 using KALS.Domain.Paginate;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,6 +20,7 @@ public class LabController: BaseController<LabController>
     
     [HttpGet(ApiEndPointConstant.Lab.LabEndPoint)]
     [ProducesResponseType(typeof(IPaginate<LabResponse>), statusCode: StatusCodes.Status200OK)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff, RoleEnum.Member)]
     public async Task<IActionResult> GetAllLabs(int page = 1, int size = 30, string? searchName = null)
     {
         var response = await _labService.GetLabsAsync(page, size, searchName);
@@ -25,6 +28,7 @@ public class LabController: BaseController<LabController>
     }
     [HttpGet(ApiEndPointConstant.Lab.LabById)]
     [ProducesResponseType(typeof(IPaginate<LabResponse>), statusCode: StatusCodes.Status200OK)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff, RoleEnum.Member)]
     public async Task<IActionResult> GetLabById(Guid id)
     {
         var response = await _labService.GetLabByIdAsync(id);
@@ -33,6 +37,7 @@ public class LabController: BaseController<LabController>
     [HttpPost(ApiEndPointConstant.Lab.LabEndPoint)]
     [ProducesResponseType(typeof(LabResponse), statusCode: StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
     public async Task<IActionResult> CreateLab([FromForm] CreateLabRequest request)
     {
         var response = await _labService.CreateLabAsync(request);
@@ -48,6 +53,7 @@ public class LabController: BaseController<LabController>
     [HttpPatch(ApiEndPointConstant.Lab.LabById)]
     [ProducesResponseType(typeof(LabResponse), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
     public async Task<IActionResult> UpdateLabById(Guid id, [FromForm] UpdateLabRequest request)
     {
         var response = await _labService.UpdateLabAsync(id, request);

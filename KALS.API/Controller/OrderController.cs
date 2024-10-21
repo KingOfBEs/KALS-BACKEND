@@ -3,6 +3,8 @@ using KALS.API.Models.Order;
 using KALS.API.Models.OrderItem;
 using KALS.API.Services.Implement;
 using KALS.API.Services.Interface;
+using KALS.API.Validator;
+using KALS.Domain.Enums;
 using KALS.Domain.Filter.FilterModel;
 using KALS.Domain.Paginate;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +23,7 @@ public class OrderController: BaseController<OrderController>
     
     [HttpGet(ApiEndPointConstant.Order.OrderEndpoint)]
     [ProducesResponseType(typeof(IPaginate<OrderResponse>), statusCode: StatusCodes.Status200OK)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff, RoleEnum.Member)]
     public async Task<IActionResult> GetOrderList([FromQuery] int page = 1, [FromQuery] int size = 30, 
         [FromQuery] OrderFilter? filter = null, [FromQuery] string? sortBy = null, [FromQuery] bool isAsc = true)
     {
@@ -30,6 +33,7 @@ public class OrderController: BaseController<OrderController>
     [HttpPatch(ApiEndPointConstant.Order.UpdateOrderStatus)]
     [ProducesResponseType(typeof(OrderResponse), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff, RoleEnum.Member)]
     public async Task<IActionResult> UpdateOrderStatusCompleted(Guid id)
     {
         var result = await _orderService.UpdateOrderStatusCompleted(id);
@@ -43,6 +47,7 @@ public class OrderController: BaseController<OrderController>
     }
     [HttpGet(ApiEndPointConstant.Order.OrderItems)]
     [ProducesResponseType(typeof(ICollection<OrderItemResponse>), statusCode: StatusCodes.Status200OK)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff, RoleEnum.Member)]
     public async Task<IActionResult> GetOrderItemsByOrderId(Guid id)
     {
         var result = await _orderService.GetOrderItemsByOrderId(id);

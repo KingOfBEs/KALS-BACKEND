@@ -3,6 +3,8 @@ using KALS.API.Models.Cart;
 using KALS.API.Models.Lab;
 using KALS.API.Models.Product;
 using KALS.API.Services.Interface;
+using KALS.API.Validator;
+using KALS.Domain.Enums;
 using KALS.Domain.Filter.FilterModel;
 using KALS.Domain.Paginate;
 using Microsoft.AspNetCore.Mvc;
@@ -39,6 +41,7 @@ public class ProductController : BaseController<ProductController>
     [HttpPost(ApiEndPointConstant.Product.ProductEndpoint)]
     [ProducesResponseType(typeof(GetProductResponse), statusCode: StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
     public async Task<IActionResult> CreateProduct([FromForm] CreateProductRequest request)
     {
         var response = await _productService.CreateProductAsync(request);
@@ -53,6 +56,7 @@ public class ProductController : BaseController<ProductController>
     [HttpPatch(ApiEndPointConstant.Product.ProductById)]
     [ProducesResponseType(typeof(GetProductResponse), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
     public async Task<IActionResult> UpdateProductById(Guid id, [FromBody] UpdateProductRequest request)
     {
         var response = await _productService.UpdateProductByIdAsync(id, request);
@@ -67,6 +71,7 @@ public class ProductController : BaseController<ProductController>
     [HttpPatch(ApiEndPointConstant.Product.UpdateProductRelationship)]
     [ProducesResponseType(typeof(GetProductResponse), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
     public async Task<IActionResult> UpdateProductRelationshipByProductId(Guid id, [FromBody] UpdateChildProductForKitRequest request)
     {
         var response = await _productService.UpdateProductRelationshipByProductIdAsync(id, request);
@@ -81,6 +86,7 @@ public class ProductController : BaseController<ProductController>
     [HttpPatch(ApiEndPointConstant.Product.LabToProduct)]
     [ProducesResponseType(typeof(GetProductResponse), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
     public async Task<IActionResult> AssignLabToProduct(Guid id, [FromBody] AssignLabsToProductRequest request)
     {
         var response = await _labService.AssignLabToProductAsync(id, request);
@@ -95,6 +101,7 @@ public class ProductController : BaseController<ProductController>
 
     [HttpGet(ApiEndPointConstant.Product.LabToProduct)]
     [ProducesResponseType(typeof(ProductWithLabResponse), statusCode: StatusCodes.Status200OK)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
     public async Task<IActionResult> GetLabsByProductId(Guid id)
     {
         var response = await _labService.GetLabsByProductIdAsync(id);
@@ -103,6 +110,7 @@ public class ProductController : BaseController<ProductController>
     [HttpDelete(ApiEndPointConstant.Product.CartByProductId)]
     [ProducesResponseType(typeof(ICollection<CartModelResponse>), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff, RoleEnum.Member)]
     public async Task<IActionResult> RemoveFromCartAsync(Guid id)
     {
         var response = await _cartService.RemoveFromCartAsync(id);
@@ -117,6 +125,7 @@ public class ProductController : BaseController<ProductController>
     [HttpPost(ApiEndPointConstant.Product.ProductImage)]
     [ProducesResponseType(typeof(GetProductResponse), statusCode: StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
     public async Task<IActionResult> AddProductImage(Guid id, [FromForm] AddImageProductRequest request)
     {
         var response = await _productService.AddProductImageByProductIdAsync(id, request);

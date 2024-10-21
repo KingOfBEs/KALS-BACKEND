@@ -21,6 +21,7 @@ public class MemberController: BaseController<MemberController>
     
     [HttpGet(ApiEndPointConstant.Member.MemberEndpoint)]
     [ProducesResponseType(typeof(IPaginate<MemberResponse>), statusCode: StatusCodes.Status200OK)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
     public async Task<IActionResult> GetMembersAsync([FromQuery] int page = 1, [FromQuery] int size = 30, 
         [FromQuery] MemberFilter? filter = null, [FromQuery] string? sortBy = null, [FromQuery] bool isAsc = true)
     {
@@ -45,6 +46,7 @@ public class MemberController: BaseController<MemberController>
     [HttpPatch(ApiEndPointConstant.Member.MemberEndpoint)]
     [ProducesResponseType(typeof(MemberResponse), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Member, RoleEnum.Manager, RoleEnum.Staff)]
     public async Task<IActionResult> UpdateMemberAsync([FromBody] UpdateMemberRequest request)
     {
         var member = await _userService.UpdateMemberAsync(request);
@@ -58,6 +60,7 @@ public class MemberController: BaseController<MemberController>
     }
     [HttpGet(ApiEndPointConstant.Member.MemberInformation)]
     [ProducesResponseType(typeof(MemberResponse), statusCode: StatusCodes.Status200OK)]
+    [CustomAuthorize(RoleEnum.Member, RoleEnum.Manager, RoleEnum.Staff)]
     public async Task<IActionResult> GetMemberInformationAsync()
     {
         var member = await _userService.GetMemberInformationAsync();

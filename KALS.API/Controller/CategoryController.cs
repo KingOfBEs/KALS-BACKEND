@@ -2,6 +2,8 @@ using KALS.API.Constant;
 using KALS.API.Models.Category;
 using KALS.API.Models.Product;
 using KALS.API.Services.Interface;
+using KALS.API.Validator;
+using KALS.Domain.Enums;
 using KALS.Domain.Paginate;
 using Microsoft.AspNetCore.Mvc;
 
@@ -36,6 +38,7 @@ public class CategoryController: BaseController<CategoryController>
     [HttpPatch(ApiEndPointConstant.Category.UpdateProductCategory)]
     [ProducesResponseType(typeof(CategoryResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
     public async Task<IActionResult> UpdateProductCategoryByCategoryIdAsync(Guid id, [FromBody] UpdateProductCategoryRequest request)
     {
         var response = await _categoryService.UpdateProductCategoryByCategoryIdAsync(id, request);
@@ -51,6 +54,7 @@ public class CategoryController: BaseController<CategoryController>
     [HttpPatch(ApiEndPointConstant.Category.CategoryById)]
     [ProducesResponseType(typeof(CategoryResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
     public async Task<IActionResult> UpdateCategoryAsync(Guid id, [FromBody] UpdateCategoryRequest request)
     {
         var response = await _categoryService.UpdateCategoryAsync(id, request);
@@ -66,6 +70,7 @@ public class CategoryController: BaseController<CategoryController>
     [HttpPost(ApiEndPointConstant.Category.CategoryEndPoint)]
     [ProducesResponseType(typeof(CategoryResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
     public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryRequest request)
     {
         var response = await _categoryService.CreateCategoryAsync(request);

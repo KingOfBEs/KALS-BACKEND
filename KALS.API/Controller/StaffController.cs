@@ -1,6 +1,8 @@
 using KALS.API.Constant;
 using KALS.API.Models.User;
 using KALS.API.Services.Interface;
+using KALS.API.Validator;
+using KALS.Domain.Enums;
 using KALS.Domain.Filter.FilterModel;
 using KALS.Domain.Paginate;
 using Microsoft.AspNetCore.Mvc;
@@ -19,6 +21,7 @@ public class StaffController: BaseController<StaffController>
     
     [HttpGet(ApiEndPointConstant.Staff.StaffEndpoint)]
     [ProducesResponseType(typeof(IPaginate<StaffResponse>), statusCode: StatusCodes.Status200OK)]
+    [CustomAuthorize(RoleEnum.Manager)]
     public async Task<IActionResult> GetStaffsAsync([FromQuery] int page = 1, [FromQuery] int size = 30, 
         [FromQuery] StaffFilter? filter = null, [FromQuery] string? sortBy = null, [FromQuery] bool isAsc = true)
     {
@@ -28,6 +31,7 @@ public class StaffController: BaseController<StaffController>
     [HttpPatch(ApiEndPointConstant.Staff.StaffById)]
     [ProducesResponseType(typeof(StaffResponse), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
     public async Task<IActionResult> UpdateStaffAsync(Guid id, [FromBody] UpdateStaffRequest request)
     {
         var staff = await _userService.UpdateStaffAsync(id, request);
@@ -42,6 +46,7 @@ public class StaffController: BaseController<StaffController>
     [HttpPost(ApiEndPointConstant.Staff.StaffEndpoint)]
     [ProducesResponseType(typeof(StaffResponse), statusCode: StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager)]
     public async Task<IActionResult> CreateStaff([FromBody] CreateStaffRequest request)
     {
         var staff = await _userService.CreateStaffAsync(request);
@@ -55,6 +60,7 @@ public class StaffController: BaseController<StaffController>
     }
     [HttpGet(ApiEndPointConstant.Staff.StaffById)]
     [ProducesResponseType(typeof(StaffResponse), statusCode: StatusCodes.Status200OK)]
+    [CustomAuthorize(RoleEnum.Manager)]
     public async Task<IActionResult> GetStaffById(Guid id)
     {
         var staff = await _userService.GetStaffById(id);
