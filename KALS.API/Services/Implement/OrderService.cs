@@ -123,7 +123,7 @@ public class OrderService: BaseService<OrderService>, IOrderService
         var orderItems = await _orderItemRepository.GetOrderItemByOrderIdAsync(orderId);
         if(orderItems.Any(oi => oi.Product == null)) 
             throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
-        using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+        using (var transaction = new TransactionScope())
         {
             try
             {

@@ -112,7 +112,7 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
             Amount = order.Total,
             Order = order
         };
-        using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+        using (var transaction = new TransactionScope())
         {
             try
             {
@@ -145,8 +145,14 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
                 
                 return createPayment.checkoutUrl;
             }
+            catch (TransactionException ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
             catch (Exception e)
             {
+                _logger.LogError(e.Message);
                 return null;
             }
         }
@@ -174,7 +180,7 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
         if (paymentLinkInformation.status == PayOsStatus.PENDING.ToString())
             throw new BadHttpRequestException(MessageConstant.Payment.YourOrderIsNotPaid);
         
-        using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+        using (var transaction = new TransactionScope())
         {
             try
             {
@@ -183,16 +189,18 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
                     case PayOsStatus.PAID:
                         payment.Status = PaymentStatus.Paid;
                         payment.ModifiedAt = TimeUtil.GetCurrentSEATime();
-                        payment.PaymentDateTime = DateTime.Parse(paymentLinkInformation.transactions[0].transactionDateTime);
+                        payment.PaymentDateTime =
+                            DateTime.Parse(paymentLinkInformation.transactions[0].transactionDateTime);
                         payment.Order.Status = OrderStatus.Processing;
                         payment.Order.ModifiedAt = TimeUtil.GetCurrentSEATime();
                         _paymentRepository.UpdateAsync(payment);
-                
+
                         var orderItems = await _orderItemRepository.GetOrderItemByOrderIdAsync(payment.Order.Id);
                         foreach (var orderItem in orderItems)
                         {
                             orderItem.Product.Quantity -= orderItem.Quantity;
                         }
+
                         _orderItemRepository.UpdateRangeAsync(orderItems);
                         break;
                     case PayOsStatus.EXPIRED:
@@ -207,14 +215,21 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
                     default:
                         throw new BadHttpRequestException(MessageConstant.Payment.PayOsStatusNotTrue);
                 }
+
                 bool isSuccess = await _paymentRepository.SaveChangesAsync();
                 transaction.Complete();
                 PaymentWithOrderResponse response = null;
                 if (isSuccess) response = _mapper.Map<PaymentWithOrderResponse>(payment);
                 return response;
             }
+            catch (TransactionException ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
             catch (Exception e)
             {
+                _logger.LogError(e.Message);
                 return null;
             }
         }

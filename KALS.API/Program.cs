@@ -1,6 +1,10 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using KALS.API.Constant;
 using KALS.API.Extensions;
 using KALS.API.Middleware;
+using KALS.API.Models.User;
+using KALS.API.Validator;
 using StackExchange.Redis;
 
 var logger = NLog.LogManager.LoadConfiguration(string.Concat(Directory.GetCurrentDirectory(), "/nlog.config"))
@@ -21,9 +25,14 @@ try
     builder.Services.AddRepositories();
     builder.Services.AddServices(builder.Configuration);
     builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+    builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
+
+    
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddAuthorization();
-    builder.Services.AddControllers();
+    builder.Services.AddControllers()
+        .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<LoginRequestValidator>());
     builder.Services.AddJwtAuthentication();
     builder.Services.AddConfigSwagger();
     builder.Services.AddSwaggerGen();

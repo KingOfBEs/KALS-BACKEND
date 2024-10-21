@@ -84,7 +84,7 @@ public class UserService : BaseService<UserService>, IUserService
             User = user
         };
         // await _unitOfWork.GetRepository<User>().InsertAsync(user);
-        using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+        using (var transaction = new TransactionScope())
         {
             try
             {
@@ -95,13 +95,21 @@ public class UserService : BaseService<UserService>, IUserService
                 if (isSuccess)
                 {
                     response = _mapper.Map<LoginResponse>(user);
-                    response.Token = JwtUtil.GenerateJwtToken(user, new Tuple<string, Guid>("userId", user.Id), _configuration);
+                    response.Token = JwtUtil.GenerateJwtToken(user, new Tuple<string, Guid>("userId", user.Id),
+                        _configuration);
                     response.RefreshToken = JwtUtil.GenerateRefreshToken();
                 }
+
                 return response;
+            }
+            catch (TransactionException ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
             }
             catch (Exception e)
             {
+                _logger.LogError(e.Message);
                 return null;
             }
         }

@@ -8,7 +8,6 @@ public class UpdateMemberRequest
     public string? Province { get; set; }
     public string? District { get; set; }
     public string? Address { get; set; }
-    
     public string? ProvinceCode { get; set; }
     public string? DistrictCode { get; set; }
     public string? CommuneCode { get; set; }

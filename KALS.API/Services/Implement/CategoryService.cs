@@ -92,7 +92,7 @@ public class CategoryService: BaseService<CategoryService>, ICategoryService
             }
         }
 
-        using (var transaction  = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+        using (var transaction  = new TransactionScope())
         {
             try
             {
@@ -128,8 +128,14 @@ public class CategoryService: BaseService<CategoryService>, ICategoryService
                 if(isSuccess) response = _mapper.Map<CategoryResponse>(category);
                 return response;
             }
+            catch (TransactionException ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
             catch (Exception e)
             {
+                _logger.LogError(e.Message);
                 return null;
             }
         }

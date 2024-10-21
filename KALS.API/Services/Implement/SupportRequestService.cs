@@ -73,11 +73,11 @@ public class SupportRequestService: BaseService<SupportRequestService>, ISupport
             SupportRequest = supportRequest
         };
 
-        using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+        using (var transaction = new TransactionScope())
         {
             try
             {
-                if (request.ImageFiles.Any())
+                if (request.ImageFiles != null)
                 {
                     var images = await _firebaseService.UploadFilesToFirebaseAsync(request.ImageFiles);
                     foreach (var image in images)
@@ -102,8 +102,14 @@ public class SupportRequestService: BaseService<SupportRequestService>, ISupport
                 if (isSuccess) response = _mapper.Map<SupportRequestResponse>(supportRequest);
                 return response;
             }
+            catch (TransactionException ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
             catch (Exception e)
             {
+                _logger.LogError(e.Message);
                 return null;
             }
         }
@@ -139,7 +145,7 @@ public class SupportRequestService: BaseService<SupportRequestService>, ISupport
             SupportRequest = supportRequest
         };
         
-        using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+        using (var transaction = new TransactionScope())
         {
             try
             {

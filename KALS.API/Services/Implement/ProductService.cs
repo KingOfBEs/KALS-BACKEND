@@ -104,7 +104,7 @@ public class ProductService: BaseService<ProductService>, IProductService
                     throw new BadHttpRequestException(MessageConstant.Category.CategoryNotFound);
             }
         }
-        using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+        using (var transaction = new TransactionScope())
         {
             try
             {
@@ -168,15 +168,19 @@ public class ProductService: BaseService<ProductService>, IProductService
                 transaction.Complete();
                 return _mapper.Map<GetProductResponse>(product);;
             }
+            catch (TransactionException ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
             catch (Exception e)
             {
+                _logger.LogError(e.Message);
                 return null;
             }
 
         }
     }
-    
-
     public async Task<GetProductResponse> UpdateProductByIdAsync(Guid id, UpdateProductRequest request)
     {
         if(id == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Product.ProductIdNotNull);
@@ -185,12 +189,12 @@ public class ProductService: BaseService<ProductService>, IProductService
         // );
         var product = await _productRepository.GetProductByIdAsync(id);
         if(product == null) throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
-        product.Name = request.Name;
-        product.Description = request.Description;
-        product.Price = request.Price;
-        product.Quantity = request.Quantity;
-        product.IsHidden = request.IsHidden;
-        product.IsKit = request.IsKit;
+        product.Name = string.IsNullOrEmpty(request.Name) ? product.Name : request.Name;
+        product.Description = string.IsNullOrEmpty(request.Description) ? product.Description : request.Description;
+        product.Price = (int) (request.Price == null ? product.Price : request.Price);
+        product.Quantity = (int)(request.Quantity == null ? product.Quantity : request.Quantity);
+        product.IsHidden = (bool) (request.IsHidden == null ? product.IsHidden : request.IsHidden);
+        product.IsKit = (bool) (request.IsKit == null ? product.IsKit : request.IsKit);
         product.ModifiedAt = TimeUtil.GetCurrentSEATime();
         
         // _unitOfWork.GetRepository<Product>().UpdateAsync(product);
@@ -221,7 +225,7 @@ public class ProductService: BaseService<ProductService>, IProductService
             if(addChildProduct == null) throw new BadHttpRequestException(MessageConstant.Product.ChildProductNotFound);
         }
 
-        using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+        using (var transaction = new TransactionScope())
         {
             try
             {
@@ -258,8 +262,14 @@ public class ProductService: BaseService<ProductService>, IProductService
                 if (isSuccess) productResponse = _mapper.Map<GetProductResponse>(parentProduct);
                 return productResponse;
             }
+            catch (TransactionException ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
             catch (Exception e)
             {
+                _logger.LogError(e.Message);
                 return null;
             }
         }
