@@ -20,7 +20,7 @@ public class FirebaseService: BaseService<FirebaseService>, IFirebaseService
         var firebaseStorageBaseUrl = _configuration["Firebase:FirebaseStorageBaseUrl"];
         try
         {
-            if (string.IsNullOrEmpty(base64Image))
+            if (!string.IsNullOrEmpty(base64Image))
             {
                 base64Image = base64Image.Trim();
                 // string fileName = Path.GetFileName(file.FileName);
@@ -65,7 +65,7 @@ public class FirebaseService: BaseService<FirebaseService>, IFirebaseService
         {
             foreach (var base64Image in base64ImageList)
             {
-                if (string.IsNullOrEmpty(base64Image))
+                if (!string.IsNullOrEmpty(base64Image))
                 {
                     var base64ImageTrim = base64Image.Trim();
                     // string fileName = Path.GetFileName(file.FileName);

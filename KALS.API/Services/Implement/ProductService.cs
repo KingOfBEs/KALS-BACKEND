@@ -349,7 +349,6 @@ public class ProductService: BaseService<ProductService>, IProductService
             Id = Guid.NewGuid(),
             isMain = request.IsMain,
             ImageUrl = imageUrl,
-            Product = product,
             ProductId = product.Id
         };
         await _productImageRepository.InsertAsync(newProductImage);
