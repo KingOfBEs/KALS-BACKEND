@@ -42,7 +42,7 @@ public class ProductController : BaseController<ProductController>
     [ProducesResponseType(typeof(GetProductResponse), statusCode: StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
     [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
-    public async Task<IActionResult> CreateProduct([FromForm] CreateProductRequest request)
+    public async Task<IActionResult> CreateProduct([FromBody] CreateProductRequest request)
     {
         var response = await _productService.CreateProductAsync(request);
         if (response == null)
@@ -126,7 +126,7 @@ public class ProductController : BaseController<ProductController>
     [ProducesResponseType(typeof(GetProductResponse), statusCode: StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
     [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
-    public async Task<IActionResult> AddProductImage(Guid id, [FromForm] AddImageProductRequest request)
+    public async Task<IActionResult> AddProductImage(Guid id, [FromBody] AddImageProductRequest request)
     {
         var response = await _productService.AddProductImageByProductIdAsync(id, request);
         if (response == null)

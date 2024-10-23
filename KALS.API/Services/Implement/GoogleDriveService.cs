@@ -18,12 +18,12 @@ public class GoogleDriveService: BaseService<GoogleDriveService>, IGoogleDriveSe
 
     public async Task<GoogleDriveResponse> UploadToGoogleDrive(IFormFile file)
     {
-        var allowedExtensions = new[] { ".pdf", ".docx", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx" };
+        var allowedExtensions = new[] { ".txt", ".pdf", ".docx", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx" };
         var extension = Path.GetExtension(file.FileName).ToLower();
 
         if (!allowedExtensions.Contains(extension))
             throw new InvalidOperationException(
-                "Chỉ các định dạng tệp .pdf, .doc, .docx, .xls, .xlsx, .ppt, và .pptx được phép tải lên.");
+                "Chỉ các định dạng tệp txt, .pdf, .doc, .docx, .xls, .xlsx, .ppt, và .pptx được phép tải lên.");
         GoogleCredential credential;
 
 

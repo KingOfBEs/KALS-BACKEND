@@ -4,5 +4,5 @@ public class ResponseSupportRequest
 {
     public string? Content { get; set; }
     
-    public List<IFormFile>? ImageFiles { get; set; }
+    public List<string>? ImageFiles { get; set; }
 }

@@ -8,5 +8,5 @@ public class SupportRequest
     public string Content { get; set; }
     [Required]
     public Guid LabId { get; set; }
-    public List<IFormFile>? ImageFiles { get; set; }
+    public List<string>? ImageFiles { get; set; }
 }

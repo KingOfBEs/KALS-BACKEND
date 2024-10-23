@@ -186,17 +186,6 @@ public class LabService: BaseService<LabService>, ILabService
     public async Task<LabResponse> GetLabByIdAsync(Guid labId)
     {
         if(labId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Lab.LabIdNotNull);
-        // var lab =  await _unitOfWork.GetRepository<Lab>().SingleOrDefaultAsync(
-        //     selector: l => new LabResponse()
-        //     {
-        //         Id = l.Id,
-        //         Name = l.Name,
-        //         Url = l.Url,
-        //         CreatedAt = l.CreatedAt,
-        //         ModifiedAt = l.ModifiedAt
-        //     },
-        //     predicate: l => l.Id == labId
-        // );
         var lab = await _labRepository.GetLabByIdAsync(labId);
         
         return _mapper.Map<LabResponse>(lab);
@@ -205,35 +194,6 @@ public class LabService: BaseService<LabService>, ILabService
     public async Task<ProductWithLabResponse> GetLabsByProductIdAsync(Guid productId)
     {
         if (productId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Product.ProductIdNotNull);
-        // var product = await _unitOfWork.GetRepository<Product>().SingleOrDefaultAsync(
-        //     predicate: p => p.Id == productId,
-        //     include: p => p.Include(p => p.LabProducts)
-        //         .ThenInclude(lp => lp.Lab),
-        //     selector: p => new ProductWithLabResponse()
-        //     {
-        //         Id = p.Id,
-        //         Name = p.Name,
-        //         Description = p.Description,
-        //         Quantity = p.Quantity,
-        //         Price = p.Price,
-        //         CreatedAt = p.CreatedAt,
-        //         ModifiedAt = p.ModifiedAt,
-        //         IsHidden = p.IsHidden,
-        //         
-        //         Labs = p.LabProducts
-        //             .Where(lp => lp.ProductId == productId)
-        //             .Select(lp => lp.Lab).Select(l => new LabResponse()
-        //             {
-        //                 Id = l.Id,
-        //                 Name = l.Name,
-        //                 Url = l.Url,
-        //                 CreatedAt = l.CreatedAt,
-        //                 ModifiedAt = l.ModifiedAt,
-        //                 CreatedBy = l.CreatedBy,
-        //                 ModifiedBy = l.ModifiedBy
-        //             }).ToList()
-        //     }
-        // );
         var product = await _productRepository.GetProductByIdAsync(productId);
         var productWithLabResponse = _mapper.Map<ProductWithLabResponse>(product);
         return productWithLabResponse;
@@ -251,7 +211,8 @@ public class LabService: BaseService<LabService>, ILabService
         
         var googleDriveResponse = await _googleDriveService.UploadToGoogleDrive(request.File);
         if (googleDriveResponse == null) throw new BadHttpRequestException(MessageConstant.Lab.UploadFileFail);
-        if(request.Name is null) request.Name = request.File.FileName;
+        if(string.IsNullOrEmpty(request.Name)) request.Name = request.File.FileName;
+        
         var lab = _mapper.Map<Lab>(request);
         lab.Id = Guid.NewGuid();
         lab.Url = googleDriveResponse.Url;
@@ -260,17 +221,6 @@ public class LabService: BaseService<LabService>, ILabService
         lab.CreatedBy = user.Id;
         lab.ModifiedBy = user.Id;
         
-        // var lab = new Lab()
-        // {
-        //     Id = Guid.NewGuid(),
-        //     Name = request.Name ??= googleDriveResponse.FileName,
-        //     Url = googleDriveResponse.Url,
-        //     CreatedAt = TimeUtil.GetCurrentSEATime(),
-        //     ModifiedAt = TimeUtil.GetCurrentSEATime(),
-        //     CreatedBy = user.Id,
-        //     UploadedBy = user.Id
-        // };
-        // await _unitOfWork.GetRepository<Lab>().InsertAsync(lab);
         await _labRepository.InsertAsync(lab);
         bool isSuccess = await _labRepository.SaveChangesAsync();
         LabResponse labResponse = null;
@@ -286,9 +236,9 @@ public class LabService: BaseService<LabService>, ILabService
 
         if (request.File != null)
         {
-            var fileUrl = await _firebaseService.UploadFileToFirebaseAsync(request.File);
-            if (fileUrl == null) throw new BadHttpRequestException(MessageConstant.Lab.UploadFileFail);
-            lab.Url = fileUrl;
+            var googleDriveResponse = await _googleDriveService.UploadToGoogleDrive(request.File);
+            if (googleDriveResponse.Url == null) throw new BadHttpRequestException(MessageConstant.Lab.UploadFileFail);
+            lab.Url = googleDriveResponse.Url;
         }
 
         lab.Name = !string.IsNullOrEmpty(request.Name) ? request.Name : lab.Name;

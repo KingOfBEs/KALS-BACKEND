@@ -22,7 +22,7 @@ public class SupportRequestController: BaseController<SupportRequestController>
     [ProducesResponseType(typeof(SupportRequestResponse), statusCode: StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
     [CustomAuthorize(RoleEnum.Manager, RoleEnum.Member, RoleEnum.Staff)]
-    public async Task<IActionResult> CreateSupportRequest([FromForm] SupportRequest request)
+    public async Task<IActionResult> CreateSupportRequest([FromBody] SupportRequest request)
     {
         var response = await _supportRequestService.CreateSupportRequest(request);
         if (response == null)
@@ -37,7 +37,7 @@ public class SupportRequestController: BaseController<SupportRequestController>
     [ProducesResponseType(typeof(SupportMessageResponse), statusCode: StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
     [CustomAuthorize(RoleEnum.Staff)]
-    public async Task<IActionResult> CreateSupportMessage(Guid id , [FromForm] ResponseSupportRequest request)
+    public async Task<IActionResult> CreateSupportMessage(Guid id , [FromBody] ResponseSupportRequest request)
     {
         var response = await _supportRequestService.ResponseSupportMessage(id, request);
         if (response == null)

@@ -6,4 +6,5 @@ public class CheckOutRequest
 {
     [Required]
     public string Address { get; set; }
+    
 }

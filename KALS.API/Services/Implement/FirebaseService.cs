@@ -14,34 +14,34 @@ public class FirebaseService: BaseService<FirebaseService>, IFirebaseService
         _httpClient = httpClient;
     }
 
-    public async Task<string> UploadFileToFirebaseAsync(IFormFile file)
+    public async Task<string> UploadFileToFirebaseAsync(string base64Image)
     {
         var uploadedUrl = null as string;
         var firebaseStorageBaseUrl = _configuration["Firebase:FirebaseStorageBaseUrl"];
         try
         {
-            if (file.Length > 0)
+            if (string.IsNullOrEmpty(base64Image))
             {
-                string fileName = Path.GetFileName(file.FileName);
-                string firebaseStorageUrl = $"{firebaseStorageBaseUrl}?uploadType=media&name=images/{Guid.NewGuid()}_{fileName}";
+                base64Image = base64Image.Trim();
+                // string fileName = Path.GetFileName(file.FileName);
+                string firebaseStorageUrl = $"{firebaseStorageBaseUrl}?uploadType=media&name=images/{Guid.NewGuid()}";
                         
-                using (var stream = new MemoryStream())
+                byte[] imageBytes = Convert.FromBase64String(base64Image);
+                using (var stream = new MemoryStream(imageBytes))
                 {
-                    await file.CopyToAsync(stream);
-                    stream.Position = 0;
                     var content = new ByteArrayContent(stream.ToArray());
-                    content.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+                    content.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
 
                     var response = await _httpClient.PostAsync(firebaseStorageUrl, content);
                     if (response.IsSuccessStatusCode)
                     {
                         var responseBody = await response.Content.ReadAsStringAsync();
-                        var downloadUrl = ParseDownloadUrl(responseBody, fileName);
+                        var downloadUrl = ParseDownloadUrl(responseBody);
                         uploadedUrl = downloadUrl;
                     }
                     else
                     {
-                        var errorMessage = $"Error uploading file {fileName} to Firebase Storage. Status Code: {response.StatusCode}\nContent: {await response.Content.ReadAsStringAsync()}";
+                        var errorMessage = $"Error uploading image to Firebase Storage. Status Code: {response.StatusCode}\nContent: {await response.Content.ReadAsStringAsync()}";
                         _logger.LogError(errorMessage);
                     }
                 }
@@ -57,36 +57,38 @@ public class FirebaseService: BaseService<FirebaseService>, IFirebaseService
         return uploadedUrl;
     }
 
-    public async Task<List<string>> UploadFilesToFirebaseAsync(List<IFormFile> files)
+    public async Task<List<string>> UploadFilesToFirebaseAsync(List<string> base64ImageList)
     {
         var uploadedUrls = new List<string>();
         var firebaseStorageBaseUrl = _configuration["Firebase:FirebaseStorageBaseUrl"];
         try
         {
-            foreach (var file in files)
+            foreach (var base64Image in base64ImageList)
             {
-                if (file.Length > 0)
+                if (string.IsNullOrEmpty(base64Image))
                 {
-                    string fileName = Path.GetFileName(file.FileName);
-                    string firebaseStorageUrl = $"{firebaseStorageBaseUrl}?uploadType=media&name=images/{Guid.NewGuid()}_{fileName}";
-                        
-                    using (var stream = new MemoryStream())
+                    var base64ImageTrim = base64Image.Trim();
+                    // string fileName = Path.GetFileName(file.FileName);
+                    string firebaseStorageUrl = $"{firebaseStorageBaseUrl}?uploadType=media&name=images/{Guid.NewGuid()}";
+                    
+                    byte[] imageBytes = Convert.FromBase64String(base64ImageTrim);
+                    
+                    using (var stream = new MemoryStream(imageBytes))
                     {
-                        await file.CopyToAsync(stream);
-                        stream.Position = 0;
+                        
                         var content = new ByteArrayContent(stream.ToArray());
-                        content.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
-
+                        content.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+                    
                         var response = await _httpClient.PostAsync(firebaseStorageUrl, content);
                         if (response.IsSuccessStatusCode)
                         {
                             var responseBody = await response.Content.ReadAsStringAsync();
-                            var downloadUrl = ParseDownloadUrl(responseBody, fileName);
+                            var downloadUrl = ParseDownloadUrl(responseBody);
                             uploadedUrls.Add(downloadUrl);
                         }
                         else
                         {
-                            var errorMessage = $"Error uploading file {fileName} to Firebase Storage. Status Code: {response.StatusCode}\nContent: {await response.Content.ReadAsStringAsync()}";
+                            var errorMessage = $"Error uploading image to Firebase Storage. Status Code: {response.StatusCode}\nContent: {await response.Content.ReadAsStringAsync()}";
                             _logger.LogError(errorMessage);
                         }
                     }
@@ -103,7 +105,7 @@ public class FirebaseService: BaseService<FirebaseService>, IFirebaseService
         return uploadedUrls;
     }
     
-    private string ParseDownloadUrl(string responseBody, string fileName)
+    private string ParseDownloadUrl(string responseBody)
     {
         var firebaseStorageBaseUrl = _configuration["Firebase:FirebaseStorageBaseUrl"];
         var json = JsonDocument.Parse(responseBody);
