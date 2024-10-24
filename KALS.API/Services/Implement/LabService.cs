@@ -49,11 +49,10 @@ public class LabService: BaseService<LabService>, ILabService
         if(product == null) throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
         
         var (newLabIds, removeLabIds) = await _labProductRepository.GetNewAndRemoveLabIdsAsync(productId, request.LabIds);
+        if(!newLabIds.Any() && !removeLabIds.Any()) return _mapper.Map<GetProductResponse>(product);
         var members = await _memberRepository.GetMembersOrderProductAsync(productId);
         if (members != null)
         {
-            // var labMembers = await _labMemberRepository.GetListAsync();
-            // var removeLabMembers = labMembers.Where(l => removeLabIds.Contains(l.LabId));
             var removeLabMembers = await _labMemberRepository.GetLabMembersByLabIds(removeLabIds);
             if (removeLabIds.Any())
             {
@@ -68,7 +67,6 @@ public class LabService: BaseService<LabService>, ILabService
                 {
                     foreach (var newLabId in newLabIds)
                     {
-                        // bool isMemberInLab = labMembers.Any(lm => lm.LabId == newLabId && lm.MemberId == member.Id);
                         bool isMemberInLab = await _labMemberRepository.IsMemberInLab(member.Id, newLabId);
                         if (!isMemberInLab)
                         {
@@ -123,28 +121,10 @@ public class LabService: BaseService<LabService>, ILabService
             case RoleEnum.Member:
                 var userId = GetUserIdFromJwt();
                 if (userId == Guid.Empty) throw new UnauthorizedAccessException(MessageConstant.User.UserNotFound);
-                // var member = await _unitOfWork.GetRepository<Member>().SingleOrDefaultAsync(
-                //     predicate: m => m.UserId == userId
-                // );
+                
                 var member = await _memberRepository.GetMemberByUserId(userId);
                 if (member == null) throw new BadHttpRequestException(MessageConstant.User.MemberNotFound);
-                // labs = await _unitOfWork.GetRepository<Lab>().GetPagingListAsync(
-                //     selector: l => new LabResponse()
-                //     {
-                //         Id = l.Id,
-                //         Name = l.Name,
-                //         Url = l.Url,
-                //         CreatedAt = l.CreatedAt,
-                //         CreatedBy = l.CreatedBy,
-                //         ModifiedAt = l.ModifiedAt,
-                //         ModifiedBy = l.ModifiedBy,
-                //     },
-                //     predicate: l => l.LabMembers!.Any(lm => lm.MemberId.Equals(member.Id)) && 
-                //                     (searchName.IsNullOrEmpty() || l.Name.Contains(searchName!)),
-                //     page: page,
-                //     size: size,
-                //     orderBy: l => l.OrderByDescending(l => l.CreatedAt)
-                // );
+                
                 var labsByMember = await _labRepository.GetLabsPagingByMemberId(member.Id, page, size, searchName);
                 labsResponse = _mapper.Map<IPaginate<LabResponse>>(labsByMember);
                 labsResponse.Items.Select(lr => lr.ProductNames = labsByMember.Items.SelectMany(l => l.LabProducts)
@@ -153,29 +133,8 @@ public class LabService: BaseService<LabService>, ILabService
                 break;
             case RoleEnum.Manager:
             case RoleEnum.Staff:
-                // labs = await _unitOfWork.GetRepository<Lab>().GetPagingListAsync(
-                //     selector: l => new LabResponse()
-                //     {
-                //         Id = l.Id,
-                //         Name = l.Name,
-                //         Url = l.Url,
-                //         CreatedAt = l.CreatedAt,
-                //         ModifiedAt = l.ModifiedAt,
-                //         CreatedBy = l.CreatedBy,
-                //         ModifiedBy = l.ModifiedBy,
-                //     },
-                //     predicate: l => (searchName.IsNullOrEmpty() || l.Name.Contains(searchName!)),
-                //     page: page,
-                //     size: size,
-                //     orderBy: l => l.OrderByDescending(l => l.CreatedAt)
-                // );
                 var labsByManager = await _labRepository.GetLabsPagingAsync(page, size, searchName);
-                // _logger.LogInformation(labsByManager.Items.Select(l => l.LabProducts!.Count).ToList().ToString());
                 labsResponse = _mapper.Map<IPaginate<LabResponse>>(labsByManager);
-                _logger.LogInformation("LabsResponse: {0}", labsResponse.Items.ToList());
-                // labsResponse.Items.Select(lr => lr.ProductNames = labsByManager.Items.SelectMany(l => l.LabProducts)
-                //     .Where(lp => lp.LabId == lr.Id)
-                //     .Select(lp => lp.Product.Name).ToList());
                 break;
             default:
                 throw new BadHttpRequestException(MessageConstant.User.RoleNotFound);

@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace KALS.API.Models.Product;
 
 public class UpdateProductRequest
@@ -8,5 +10,4 @@ public class UpdateProductRequest
     public decimal? Price { get; set; }
     public bool? IsHidden { get; set; }
     public bool? IsKit { get; set; }
-    
 }

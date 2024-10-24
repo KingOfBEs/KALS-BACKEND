@@ -56,7 +56,7 @@ public class GenericRepository<T>: IGenericRepository<T>, IAsyncDisposable where
     public async Task<IPaginate<TResult>> GetPagingListAsync<TResult>(Expression<Func<T, TResult>> selector, IFilter<T> filter, Expression<Func<T, bool>> predicate = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
         Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, int page = 1, int size = 10, string sortBy = null, bool isAsc = true)
     {
-        IQueryable<T> query = _dbSet.AsNoTracking();
+        IQueryable<T> query = _dbSet;
         
         if (filter != null)
         {
@@ -74,7 +74,7 @@ public class GenericRepository<T>: IGenericRepository<T>, IAsyncDisposable where
             query = orderBy(query);
         }
         
-        return await query.Select(selector).ToPaginateAsync(page, size, 1);
+        return await query.AsNoTracking().Select(selector).ToPaginateAsync(page, size, 1);
       
     }
     private IQueryable<T> PerformManualJoin(IQueryable<T> query)

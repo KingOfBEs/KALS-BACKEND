@@ -103,9 +103,6 @@ public class OrderService: BaseService<OrderService>, IOrderService
                             MemberId = order.MemberId,
                             LabId = labProduct.LabId
                         });
-                        //TODO: fix
-                        // var isInsertLabMemberSuccess = await _labMemberRepository.SaveChangesAsync();
-                        // if (!isInsertLabMemberSuccess) return null;
                     }
                 }
                 // _unitOfWork.GetRepository<Order>().UpdateAsync(order);
@@ -120,6 +117,7 @@ public class OrderService: BaseService<OrderService>, IOrderService
             }
             catch (Exception e)
             {
+                _logger.LogError(e.Message);
                 return null;
             }
         }
@@ -129,10 +127,7 @@ public class OrderService: BaseService<OrderService>, IOrderService
     public async Task<ICollection<OrderItemResponse>> GetOrderItemsByOrderId(Guid orderId)
     {
         if (orderId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Order.OrderIdNotNull);
-        // var orderItems = await _unitOfWork.GetRepository<OrderItem>().GetListAsync(
-        //     predicate: oi => oi.OrderId == orderId,
-        //     include: oi => oi.Include(oi => oi.Product)
-        // );
+        
         var orderItems = await _orderItemRepository.GetOrderItemByOrderIdAsync(orderId);
         var response = _mapper.Map<ICollection<OrderItemResponse>>(orderItems);
         return response;

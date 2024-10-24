@@ -10,7 +10,28 @@ using KALS.Domain.Paginate;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KALS.API.Controller;
-
+////////////////////////////////////////////////////////////////////
+//                          _ooOoo_                               //
+//                         o8888888o                              //
+//                         88" . "88                              //
+//                         (| ^_^ |)                              //
+//                         O\  =  /O                              //
+//                      ____/`---'\____                           //
+//                    .'  \\|     |//  `.                         //
+//                   /  \\|||  :  |||//  \                        //
+//                  /  _||||| -:- |||||-  \                       //
+//                  |   | \\\  -  /// |   |                       //
+//                  | \_|  ''\---/''  |   |                       //
+//                  \  .-\__  `-`  ___/-. /                       //
+//                ___`. .'  /--.--\  `. . ___                     //
+//              ."" '<  `.___\_<|>_/___.'  >'"".                  //
+//            | | :  `- \`.;`\ _ /`;.`/ - ` : | |                 //
+//            \  \ `-.   \_ __\ /__ _/   .-` /  /                 //
+//      ========`-.____`-.___\_____/___.-`____.-'========         //
+//                           `=---='                              //
+//      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^        //
+//                                                                //
+////////////////////////////////////////////////////////////////////
 [ApiController]
 [Route(ApiEndPointConstant.Product.ProductEndpoint)]
 public class ProductController : BaseController<ProductController>
@@ -122,20 +143,20 @@ public class ProductController : BaseController<ProductController>
         _logger.LogInformation($"Remove from cart successful with {id}");
         return Ok(response);
     }
-    [HttpPost(ApiEndPointConstant.Product.ProductImage)]
-    [ProducesResponseType(typeof(GetProductResponse), statusCode: StatusCodes.Status201Created)]
+    [HttpPatch(ApiEndPointConstant.Product.ProductImage)]
+    [ProducesResponseType(typeof(GetProductResponse), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
     [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
-    public async Task<IActionResult> AddProductImage(Guid id, [FromBody] AddImageProductRequest request)
+    public async Task<IActionResult> UpdateProductImage(Guid id, [FromBody] ICollection<AddImageProductRequest> request)
     {
-        var response = await _productService.AddProductImageByProductIdAsync(id, request);
+        var response = await _productService.UpdateProductImageByProductIdAsync(id, request);
         if (response == null)
         {
-            _logger.LogError($"Add product image failed with {id}");
+            _logger.LogError($"Update product image failed with {id}");
             return Problem($"{MessageConstant.ProductImage.AddProductImageFail}: {id}");
         }
-        _logger.LogInformation($"Add product image successful with {id}");
-        return CreatedAtAction(nameof(AddProductImage), response);
+        _logger.LogInformation($"Update product image successful with {id}");
+        return Ok(response);
     }
     
 }

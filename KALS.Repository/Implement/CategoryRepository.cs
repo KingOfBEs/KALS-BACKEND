@@ -1,5 +1,6 @@
 using KALS.Domain.DataAccess;
 using KALS.Domain.Entities;
+using KALS.Domain.Filter.FilterModel;
 using KALS.Domain.Paginate;
 using KALS.Repository.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,7 @@ public class CategoryRepository: GenericRepository<Category>, ICategoryRepositor
     {
     }
 
-    public async Task<IPaginate<Category>> GetCategoriesPaginateAsync(int page, int size)
+    public async Task<IPaginate<Category>> GetCategoriesPaginateAsync(int page, int size, CategoryFilter? filter)
     {
         var categories = await GetPagingListAsync(
             page: page,
@@ -25,7 +26,7 @@ public class CategoryRepository: GenericRepository<Category>, ICategoryRepositor
                 CreatedAt = c.CreatedAt,
                 ModifiedAt = c.ModifiedAt
             },
-            filter: null,
+            filter: filter,
             orderBy: c => c.OrderByDescending(c => c.CreatedAt)
         );
         return categories;

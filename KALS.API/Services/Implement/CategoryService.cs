@@ -6,6 +6,7 @@ using KALS.API.Services.Interface;
 using KALS.API.Utils;
 using KALS.Domain.DataAccess;
 using KALS.Domain.Entities;
+using KALS.Domain.Filter.FilterModel;
 using KALS.Domain.Paginate;
 using KALS.Repository.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -26,9 +27,9 @@ public class CategoryService: BaseService<CategoryService>, ICategoryService
         _productRepository = productRepository;
     }
 
-    public async Task<IPaginate<CategoryResponse>> GetCategoriesPagingAsync(int page, int size)
+    public async Task<IPaginate<CategoryResponse>> GetCategoriesPagingAsync(int page, int size, CategoryFilter? filter)
     {
-        var categories = await _categoryRepository.GetCategoriesPaginateAsync(page, size);
+        var categories = await _categoryRepository.GetCategoriesPaginateAsync(page, size, filter);
         var response = _mapper.Map<IPaginate<CategoryResponse>>(categories);
         return response;
     }
@@ -46,19 +47,9 @@ public class CategoryService: BaseService<CategoryService>, ICategoryService
     {
         
         if(categoryId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Category.CategoryIdNotNull);
-        // var category = await _unitOfWork.GetRepository<Category>().SingleOrDefaultAsync(
-        //     predicate: c => c.Id == categoryId,
-        //     include: c => c.Include(c => c.ProductCategories)
-        //         .ThenInclude(pc => pc.Product)
-        // );
         var category = await _categoryRepository.GetCategoryByIdAsync(categoryId);
         if (category == null) throw new BadHttpRequestException(MessageConstant.Category.CategoryNotFound);
         
-        // var currentProductIds = category.ProductCategories
-        //     .Select(pc => pc.ProductId)
-        //     .ToList();
-        // var newProductIds = request.ProductIds.Except(currentProductIds).ToList();
-        // var removeProductIds = currentProductIds.Except(request.ProductIds).ToList();
         var (newProductIds, removeProductIds) = await _productCategoryRepository.GetNewAndRemoveProductIdsAsync(categoryId, request.ProductIds);
         foreach (var newProductId in newProductIds)
         {
@@ -68,7 +59,7 @@ public class CategoryService: BaseService<CategoryService>, ICategoryService
                 throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
             }
         }
-
+        if(!removeProductIds.Any() && !newProductIds.Any()) return _mapper.Map<CategoryResponse>(category);
         using (var transaction  = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
         {
             try

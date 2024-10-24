@@ -9,5 +9,6 @@ public class ProductImageMapper: Profile
     public ProductImageMapper()
     {
         CreateMap<ProductImage, ProductImageResponse>();
+        CreateMap<AddImageProductRequest, ProductImage>();
     }
 }

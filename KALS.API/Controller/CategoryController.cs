@@ -4,11 +4,33 @@ using KALS.API.Models.Product;
 using KALS.API.Services.Interface;
 using KALS.API.Validator;
 using KALS.Domain.Enums;
+using KALS.Domain.Filter.FilterModel;
 using KALS.Domain.Paginate;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KALS.API.Controller;
-
+////////////////////////////////////////////////////////////////////
+//                          _ooOoo_                               //
+//                         o8888888o                              //
+//                         88" . "88                              //
+//                         (| ^_^ |)                              //
+//                         O\  =  /O                              //
+//                      ____/`---'\____                           //
+//                    .'  \\|     |//  `.                         //
+//                   /  \\|||  :  |||//  \                        //
+//                  /  _||||| -:- |||||-  \                       //
+//                  |   | \\\  -  /// |   |                       //
+//                  | \_|  ''\---/''  |   |                       //
+//                  \  .-\__  `-`  ___/-. /                       //
+//                ___`. .'  /--.--\  `. . ___                     //
+//              ."" '<  `.___\_<|>_/___.'  >'"".                  //
+//            | | :  `- \`.;`\ _ /`;.`/ - ` : | |                 //
+//            \  \ `-.   \_ __\ /__ _/   .-` /  /                 //
+//      ========`-.____`-.___\_____/___.-`____.-'========         //
+//                           `=---='                              //
+//      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^        //
+//                                                                //
+////////////////////////////////////////////////////////////////////
 [ApiController]
 [Route(ApiEndPointConstant.Category.CategoryEndPoint)]
 public class CategoryController: BaseController<CategoryController>
@@ -23,9 +45,9 @@ public class CategoryController: BaseController<CategoryController>
     
     [HttpGet(ApiEndPointConstant.Category.CategoryEndPoint)]
     [ProducesResponseType(typeof(IPaginate<CategoryResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetCategoriesPagingAsync(int page = 1, int size = 30)
+    public async Task<IActionResult> GetCategoriesPagingAsync(int page = 1, int size = 30, [FromQuery] CategoryFilter filter = null)
     {
-        var categories = await _categoryService.GetCategoriesPagingAsync(page, size);
+        var categories = await _categoryService.GetCategoriesPagingAsync(page, size, filter);
         return Ok(categories);
     }
     [HttpGet(ApiEndPointConstant.Category.CategoryById)]

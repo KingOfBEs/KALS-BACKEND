@@ -34,7 +34,7 @@ public class CartService: BaseService<CartService>, ICartService
         var response = _mapper.Map<CartModelResponse>(product);
         response.Quantity = request.Quantity;
         response.ProductId = product.Id;
-        response.MainImage = product.ProductImages?.Where(pi => pi.isMain == true).FirstOrDefault()?.ImageUrl;
+        response.MainImage = product.ProductImages?.Where(pi => pi.IsMain == true).FirstOrDefault()?.ImageUrl;
         
         // var redis = ConnectionMultiplexer.Connect(_configuration.GetConnectionString("Redis"));
         // var db = redis.GetDatabase();

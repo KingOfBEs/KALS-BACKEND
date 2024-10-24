@@ -133,5 +133,6 @@ public class MessageConstant
         public const string MainImageExist = "Ảnh chính đã tồn tại";
         public const string UploadImageFail = "Upload ảnh không thành công";
         public const string AddProductImageFail = "Thêm ảnh sản phẩm không thành công";
+        public const string WrongMainImageQuantity = "Bắt buộc phải có một ảnh chính";
     }
 }

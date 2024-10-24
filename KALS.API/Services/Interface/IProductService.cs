@@ -16,6 +16,6 @@ public interface IProductService
     
     Task<GetProductResponse> DeleteProductImageById(Guid id);
     
-    Task<GetProductResponse> AddProductImageByProductIdAsync(Guid productId,  AddImageProductRequest request);
+    Task<GetProductResponse> UpdateProductImageByProductIdAsync(Guid productId,  ICollection<AddImageProductRequest> request);
     
 }
