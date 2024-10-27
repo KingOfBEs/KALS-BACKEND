@@ -10,7 +10,7 @@ public interface IProductService
     Task<GetProductDetailResponse> GetProductByIdAsync(Guid id);
     Task<GetProductResponse> CreateProductAsync(CreateProductRequest request);
     Task<GetProductResponse> UpdateProductByIdAsync(Guid id, UpdateProductRequest request);
-    Task<GetProductResponse> UpdateProductRelationshipByProductIdAsync(Guid parentId, ICollection<UpdateChildProductForKitRequest> request);
+    Task<GetProductResponse> UpdateProductRelationshipByProductIdAsync(Guid parentId, UpdateChildProductForKitRequest request);
     Task<ICollection<GetProductResponse>> GetChildProductsByParentIdAsync(Guid parentId);
     Task<IPaginate<GetProductResponse>> GetProductByCategoryIdAsync(Guid categoryId, int page, int size);
     

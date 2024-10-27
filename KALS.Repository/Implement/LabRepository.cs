@@ -16,18 +16,6 @@ public class LabRepository: GenericRepository<Lab>, ILabRepository
     public async Task<Lab> GetLabByIdAsync(Guid id)
     {
         var lab = await SingleOrDefaultAsync(
-            predicate: l => l.Id == id,
-            include: l => l.Include(l => l.LabMembers)
-                .ThenInclude(lm => lm.Member)
-                .Include(l => l.Product)
-                .ThenInclude(p => p.ProductImages)
-        );
-        return lab;
-    }
-
-    public async Task<Lab> GetLabByIdNoProductAsync(Guid id)
-    {
-        var lab = await SingleOrDefaultAsync(
             predicate: l => l.Id == id
         );
         return lab;
@@ -46,8 +34,7 @@ public class LabRepository: GenericRepository<Lab>, ILabRepository
                 ModifiedBy = l.ModifiedBy,
                 Url = l.Url,
                 LabMembers = l.LabMembers,
-                ProductId = l.ProductId,
-                Product = l.Product,
+                LabProducts = l.LabProducts
             },
             predicate: l => l.LabMembers!.Any(lm => lm.MemberId.Equals(memberId)) && 
                             (searchName.IsNullOrEmpty() || l.Name.Contains(searchName!)),
@@ -57,8 +44,8 @@ public class LabRepository: GenericRepository<Lab>, ILabRepository
             filter: null,
             include: l => l.Include(l => l.LabMembers)
                 .ThenInclude(lm => lm.Member)
-                .Include(l => l.Product)
-                .ThenInclude(p => p.ProductImages)
+                .Include(l => l.LabProducts)
+                .ThenInclude(lp => lp.Product)
         );
         return labs;
     }
@@ -76,15 +63,15 @@ public class LabRepository: GenericRepository<Lab>, ILabRepository
                 ModifiedBy = l.ModifiedBy,
                 Url = l.Url,
                 LabMembers = l.LabMembers,
-                Product = l.Product
+                LabProducts = l.LabProducts
             },
             predicate: l => (searchName.IsNullOrEmpty() || l.Name.Contains(searchName!)),
             page: page,
             size: size,
             orderBy: l => l.OrderByDescending(l => l.CreatedAt),
             filter: null,
-            include: l => l.Include(l => l.Product)
-                .ThenInclude(p => p.ProductImages)
+            include: l => l.Include(l => l.LabProducts)
+                .ThenInclude(lp => lp.Product)
                 .Include(l => l.LabMembers)
                 .ThenInclude(lm => lm.Member)
         );

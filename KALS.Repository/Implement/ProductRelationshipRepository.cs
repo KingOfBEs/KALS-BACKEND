@@ -11,16 +11,14 @@ public class ProductRelationshipRepository: GenericRepository<ProductRelationshi
     {
     }
 
-    public async Task<(List<Guid> currentChildProducts, List<Guid> newChildProducts, List<Guid> removeChildProducts)> GetNewAndRemoveChildProductIdsAsync(Guid parentId, List<Guid> requestedChildProductIds)
+    public async Task<(List<Guid> newChildProducts, List<Guid> removeChildProducts)> GetNewAndRemoveChildProductIdsAsync(Guid parentId, List<Guid> requestedChildProductIds)
     {
         var productRelationships = await GetListAsync(
             predicate: x => x.ParentProductId == parentId
         );
-        var childProducts = productRelationships.Select(x => x.ChildProductId).ToList();
-        var newChildProducts = requestedChildProductIds.Except(childProducts).ToList();
-        var removeChildProducts = childProducts.Except(requestedChildProductIds).ToList();
-        var currentChildProducts = childProducts.Except(removeChildProducts).ToList();
-        return (currentChildProducts, newChildProducts, removeChildProducts);
+        var newChildProducts = requestedChildProductIds.Except(productRelationships.Select(x => x.ChildProductId)).ToList();
+        var removeChildProducts = productRelationships.Select(x => x.ChildProductId).Except(requestedChildProductIds).ToList();
+        return (newChildProducts, removeChildProducts);
     }
 
     public Task<ProductRelationship> GetChildProductByIdAsync(Guid parentId, Guid childProductId)

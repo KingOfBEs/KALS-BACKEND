@@ -70,7 +70,7 @@ public class ProductService: BaseService<ProductService>, IProductService
             ModifiedAt = p.ModifiedAt,
             IsHidden = p.IsHidden,
             IsKit = p.IsKit,
-            ChildProducts = p.ChildProducts.Select(pr => pr.ChildProduct).Select(cp => new ChildProductResponse()
+            ChildProducts = p.ChildProducts.Select(pr => pr.ChildProduct).Select(cp => new GetProductResponse()
             {
                 Id = cp.Id,
                 Name = cp.Name,
@@ -80,8 +80,7 @@ public class ProductService: BaseService<ProductService>, IProductService
                 IsHidden = cp.IsHidden,
                 IsKit = cp.IsKit,
                 CreatedAt = cp.CreatedAt,
-                ModifiedAt = cp.ModifiedAt,
-                QuantityInKit = cp.ParentProducts.First(pp => pp.ParentProductId == p.Id).Quantity
+                ModifiedAt = cp.ModifiedAt
             }).ToList(),
             ProductImages = p.ProductImages.Select(pi => new ProductImageResponse()
             {
@@ -103,25 +102,18 @@ public class ProductService: BaseService<ProductService>, IProductService
 
     public async Task<GetProductResponse> CreateProductAsync(CreateProductRequest request)
     {
-        
         var product = _mapper.Map<Product>(request);
         product.Id = Guid.NewGuid();
         product.CreatedAt = TimeUtil.GetCurrentSEATime();
         product.ModifiedAt = TimeUtil.GetCurrentSEATime();
-        decimal expectedPrice = 0;
-        if (request.RequestChildProducts != null && request.IsKit)
+        if (request.ChildProductIds != null)
         {
-            foreach (var childProduct in request.RequestChildProducts)
+            foreach (var childProductId in request.ChildProductIds)
             {
-                var requestedChildProduct = await _productRepository.GetProductByIdAsync(childProduct.ChildProductId);
+                var requestedChildProduct = await _productRepository.GetProductByIdAsync(childProductId);
                 if (requestedChildProduct == null)
                     throw new BadHttpRequestException(MessageConstant.Product.ChildProductNotFound);
-                expectedPrice += requestedChildProduct.Price * childProduct.Quantity;
-            }
-            if (request.Price > expectedPrice)
-            {
-                throw new BadHttpRequestException(MessageConstant.Product.PriceMustBeSmallerThanExpectedPrice);
-            }
+            } 
         }
 
         if (request.CategoryIds != null)
@@ -137,15 +129,14 @@ public class ProductService: BaseService<ProductService>, IProductService
         {
             try
             {
-                if (request.RequestChildProducts != null && request.IsKit)
+                if (request.ChildProductIds != null)
                 {
-                    foreach (var childProduct in request.RequestChildProducts)
+                    foreach (var childProductId in request.ChildProductIds)
                     {
                         await _productRelationshipRepository.InsertAsync(new ProductRelationship()
                         {
                             ParentProductId = product.Id,
-                            ChildProductId = childProduct.ChildProductId,
-                            Quantity = childProduct.Quantity
+                            ChildProductId = childProductId
                         });
                     }
                 }
@@ -219,30 +210,16 @@ public class ProductService: BaseService<ProductService>, IProductService
         if(product == null) throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
         product.Name = string.IsNullOrEmpty(request.Name) ? product.Name : request.Name;
         product.Description = string.IsNullOrEmpty(request.Description) ? product.Description : request.Description;
-        // product.Price = (int) (request.Price == null ? product.Price : request.Price);
-        if (request.Price != null)
-        {
-            decimal expectedPrice = 0;
-            var childProducts = await _productRepository.GetListProductsByParentIdAsync(id);
-            foreach (var childProduct in childProducts)
-            {
-                expectedPrice += childProduct.Price * childProduct.ParentProducts!.First(cp => cp.ParentProductId == id).Quantity;
-            }
-            if (request.Price > expectedPrice)
-            {
-                throw new BadHttpRequestException(MessageConstant.Product.PriceMustBeSmallerThanExpectedPrice);
-            }
-            product.Price = (decimal) request.Price;
-        }
+        product.Price = (int) (request.Price == null ? product.Price : request.Price);
         product.Quantity = (int)(request.Quantity == null ? product.Quantity : request.Quantity);
         product.IsHidden = (bool) (request.IsHidden == null ? product.IsHidden : request.IsHidden);
         product.IsKit = (bool) (request.IsKit == null ? product.IsKit : request.IsKit);
         product.ModifiedAt = TimeUtil.GetCurrentSEATime();
-        
         if (request.IsKit == false && product.ChildProducts!.Any())
         { 
             foreach (var childProduct in product.ChildProducts!)
             { 
+                        
                 _productRelationshipRepository.DeleteAsync(childProduct); 
             }
         }
@@ -258,24 +235,25 @@ public class ProductService: BaseService<ProductService>, IProductService
         return productResponse;
     }
 
-    public async Task<GetProductResponse> UpdateProductRelationshipByProductIdAsync(Guid parentId, ICollection<UpdateChildProductForKitRequest> request)
+    public async Task<GetProductResponse> UpdateProductRelationshipByProductIdAsync(Guid parentId, UpdateChildProductForKitRequest request)
     {
         if(parentId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Product.ProductIdNotNull);
-        if (!request.Any())
+        if (!request.ChildProductIds.Any())
             throw new BadHttpRequestException(MessageConstant.Product.ChildProductIdNotNull);
         
         var parentProduct = await _productRepository.GetProductByIdAsync(parentId);
+        
         if(parentProduct == null) throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
         if (parentProduct.IsKit == false) throw new BadHttpRequestException(MessageConstant.Product.ProductIsNotKit);
-        var childProductIds = request.Select(r => r.ChildProductId).ToList();
-        var (currentChildProductIds, addChildProductIds, removeChildProductIds) = 
-            await _productRelationshipRepository.GetNewAndRemoveChildProductIdsAsync(parentId, childProductIds);
+        
+        var (addChildProductIds, removeChildProductIds) = await _productRelationshipRepository.GetNewAndRemoveChildProductIdsAsync(parentId, request.ChildProductIds);
         foreach (var addChildProductId in addChildProductIds)
         {
             var addChildProduct = await _productRepository.GetProductByIdAsync(addChildProductId);
             if(addChildProduct == null) throw new BadHttpRequestException(MessageConstant.Product.ChildProductNotFound);
         }
-        if (!currentChildProductIds.Any() && !removeChildProductIds.Any() && !addChildProductIds.Any())
+
+        if (!removeChildProductIds.Any() && !addChildProductIds.Any())
         {
             return _mapper.Map<GetProductResponse>(parentProduct);
         }
@@ -283,16 +261,6 @@ public class ProductService: BaseService<ProductService>, IProductService
         {
             try
             {
-                if (currentChildProductIds.Any())
-                {
-                    foreach (var currentChildProduct in currentChildProductIds)
-                    {
-                        var currentChildProductRelationship = await _productRelationshipRepository.GetChildProductByIdAsync(parentId, currentChildProduct);
-                        currentChildProductRelationship.Quantity = 
-                            request.First(r => r.ChildProductId == currentChildProduct).Quantity;
-                        _productRelationshipRepository.UpdateAsync(currentChildProductRelationship);
-                    }
-                }
                 if (removeChildProductIds.Any())
                 {
                     foreach (var removeChildProductId in removeChildProductIds)
@@ -311,8 +279,7 @@ public class ProductService: BaseService<ProductService>, IProductService
                             new ProductRelationship()
                             {
                                 ParentProductId = parentId,
-                                ChildProductId = addChildProductId,
-                                Quantity = request.First(r => r.ChildProductId == addChildProductId).Quantity
+                                ChildProductId = addChildProductId
                             });
                     }
                 }
@@ -380,52 +347,42 @@ public class ProductService: BaseService<ProductService>, IProductService
         var requestProductImagesId = request
             .Where(pi => pi.Id != null)
             .Select(pi => pi.Id!.Value).ToList();
-        
-        var removedProductImageIds = await _productImageRepository.GetRemovedProductImageIdsAsync(productId, requestProductImagesId);
-        using (var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+        var removedProductImageIds = product.ProductImages!
+            .Select(pi => pi.Id)
+            .Except(requestProductImagesId).ToList();
+        foreach (var removeProductImageId in removedProductImageIds)
         {
-            try
+            var productImage = await _productImageRepository.GetProductImageByIdAsync(removeProductImageId);
+            _productImageRepository.DeleteAsync(productImage);
+        }
+
+        foreach (var imageProduct in request)
+        {
+            if (imageProduct.Id == null)
             {
-                foreach (var removeProductImageId in removedProductImageIds)
+                var imageUrl = await _firebaseService.UploadFileToFirebaseAsync(imageProduct.ImageUrl);
+                if (string.IsNullOrEmpty(imageUrl))
+                    throw new BadHttpRequestException(MessageConstant.ProductImage.UploadImageFail);
+                var newProductImage = new ProductImage()
                 {
-                    var productImage = await _productImageRepository.GetProductImageByIdAsync(removeProductImageId);
-                    _productImageRepository.DeleteAsync(productImage);
-                }
-                foreach (var imageProduct in request)
-                {
-                    if (imageProduct.Id == null)
-                    {
-                        var imageUrl = await _firebaseService.UploadFileToFirebaseAsync(imageProduct.ImageUrl);
-                        if (string.IsNullOrEmpty(imageUrl))
-                            throw new BadHttpRequestException(MessageConstant.ProductImage.UploadImageFail);
-                        var newProductImage = new ProductImage()
-                        {
-                            Id = Guid.NewGuid(),
-                            IsMain = imageProduct.IsMain,
-                            ImageUrl = imageUrl,
-                            ProductId = product.Id
-                        };
-                        await _productImageRepository.InsertAsync(newProductImage);
-                    }
-                    else
-                    {
-                        var productImage = _mapper.Map<ProductImage>(imageProduct);
-                        productImage.Id = imageProduct.Id!.Value;
-                        productImage.ProductId = product.Id;
-                        _productImageRepository.UpdateAsync(productImage);
-                    }
-                }
-                bool isSuccess = await _productImageRepository.SaveChangesAsync();
-                transactionScope.Complete();
-                GetProductResponse productResponse = null;
-                if (isSuccess) productResponse = _mapper.Map<GetProductResponse>(product);
-                return productResponse;
+                    Id = Guid.NewGuid(),
+                    IsMain = imageProduct.IsMain,
+                    ImageUrl = imageUrl,
+                    ProductId = product.Id
+                };
+                await _productImageRepository.InsertAsync(newProductImage);
             }
-            catch (Exception e)
+            else
             {
-                _logger.LogError(e.Message);
-                return null;
+                var productImage = _mapper.Map<ProductImage>(imageProduct);
+                productImage.Id = imageProduct.Id!.Value;
+                productImage.ProductId = product.Id;
+                _productImageRepository.UpdateAsync(productImage);
             }
         }
+        bool isSuccess = await _productImageRepository.SaveChangesAsync();
+        GetProductResponse productResponse = null;
+        if (isSuccess) productResponse = _mapper.Map<GetProductResponse>(product);
+        return productResponse;
     }
 }

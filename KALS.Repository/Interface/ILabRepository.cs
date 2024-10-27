@@ -7,8 +7,6 @@ public interface ILabRepository: IGenericRepository<Lab>
 {
     Task<Lab> GetLabByIdAsync(Guid id);
     
-    Task<Lab> GetLabByIdNoProductAsync(Guid id);
-    
     Task<IPaginate<Lab>> GetLabsPagingByMemberId(Guid memberId, int page, int size, string? searchName);
     
     Task<IPaginate<Lab>> GetLabsPagingAsync(int page, int size, string? searchName);

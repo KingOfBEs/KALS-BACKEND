@@ -27,39 +27,36 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
     private readonly IProductRepository _productRepository;
     private readonly IOrderRepository _orderRepository;
     private readonly IOrderItemRepository _orderItemRepository;
-    private readonly IRedisService _redisService;
     public PaymentService(ILogger<PaymentService> logger, IMapper mapper, 
         IHttpContextAccessor httpContextAccessor, IConfiguration configuration,
         IMemberRepository memberRepository, IPaymentRepository paymentRepository, IProductRepository productRepository,
-        IOrderRepository orderRepository, IOrderItemRepository orderItemRepository, IRedisService redisService) : base(logger, mapper, httpContextAccessor, configuration)
+        IOrderRepository orderRepository, IOrderItemRepository orderItemRepository) : base(logger, mapper, httpContextAccessor, configuration)
     {
         _memberRepository = memberRepository;
         _paymentRepository = paymentRepository;
         _productRepository = productRepository;
         _orderRepository = orderRepository;
         _orderItemRepository = orderItemRepository;
-        _redisService = redisService;
     }
 
     public async Task<string> CheckOut(CheckOutRequest request)
     {
-        PayOS payOs = new PayOS(_configuration["PAYOS:PAYOS_CLIENT_ID"]!,
-            _configuration["PAYOS:PAYOS_API_KEY"]!,
-            _configuration["PAYOS:PAYOS_CHECKSUM_KEY"]!);
+        PayOS _payOs = new PayOS(_configuration["PAYOS:PAYOS_CLIENT_ID"] ?? throw new Exception("Cannot find environment"),
+            _configuration["PAYOS:PAYOS_API_KEY"] ?? throw new Exception("Cannot find environment"),
+            _configuration["PAYOS:PAYOS_CHECKSUM_KEY"] ?? throw new Exception("Cannot find environment"));
         
         var userId = GetUserIdFromJwt();
         
         var member = await _memberRepository.GetMemberByUserId(userId);
         if (member == null) throw new UnauthorizedAccessException(MessageConstant.User.UserNotFound);
-        if( member.Commune == null || member.Province == null || member.District == null || member.Address == null) 
-            throw new BadHttpRequestException(MessageConstant.User.MemberAddressNotFound);
+        // if( member.Ward == null || member.Province == null || member.District == null || member.Address == null) 
+        //     throw new BadHttpRequestException(MessageConstant.User.MemberAddressNotFound);
         var redis = ConnectionMultiplexer.Connect(_configuration.GetConnectionString("Redis"));
-        // var db = redis.GetDatabase();
-        // var cartData = await db.StringGetAsync(key);
+        var db = redis.GetDatabase();
         var key = "Cart:" + userId;
-        var cartData = await _redisService.GetStringAsync(key);
+        var cartData = await db.StringGetAsync(key);
 
-        if (string.IsNullOrEmpty(cartData)) throw new BadHttpRequestException(MessageConstant.Cart.CartNotFound);
+        if (cartData.IsNullOrEmpty) throw new BadHttpRequestException(MessageConstant.Cart.CartNotFound);
         
         var cart = JsonConvert.DeserializeObject<List<CartModelResponse>>(cartData);
         
@@ -93,9 +90,7 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
                 Quantity = cartModel.Quantity,
                 CreatedAt = TimeUtil.GetCurrentSEATime(),
                 ModifiedAt =TimeUtil.GetCurrentSEATime(),
-                Order = order,
-                WarrantyCode = CodeUtil.GenerateWarrantyCode(product.Id),
-                WarrantyExpired = null
+                Order = order
             };
             orderItems.Add(orderItem);
             
@@ -122,6 +117,7 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
             try
             {
                 await _orderRepository.InsertAsync(order);
+                // await _unitOfWork.GetRepository<Payment>().InsertAsync(payment);
                 await _paymentRepository.InsertAsync(payment);
                 
                 foreach (var orderItem in orderItems) 
@@ -145,7 +141,7 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
                     expiredAt: ((DateTimeOffset) TimeUtil.GetCurrentSEATime().AddMinutes(10)).ToUnixTimeSeconds()
                     );
                 // Call the external payment service to create a payment link
-                CreatePaymentResult createPayment = await payOs.createPaymentLink(paymentData);
+                CreatePaymentResult createPayment = await _payOs.createPaymentLink(paymentData);
                 
                 return createPayment.checkoutUrl;
             }

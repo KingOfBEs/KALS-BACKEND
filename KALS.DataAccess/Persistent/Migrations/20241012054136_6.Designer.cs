@@ -4,6 +4,7 @@ using KALS.Domain.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KALS.DataAccess.Persistent.Migrations
 {
     [DbContext(typeof(KitAndLabDbContext))]
-    partial class KitAndLabDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241012054136_6")]
+    partial class _6
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -124,29 +127,29 @@ namespace KALS.DataAccess.Persistent.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("Commune")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("CommuneCode")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("District")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("DistrictCode")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("DistrictCode")
+                        .HasColumnType("int");
 
                     b.Property<string>("Province")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("ProvinceCode")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("ProvinceCode")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Ward")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int?>("WardCode")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -165,10 +168,6 @@ namespace KALS.DataAccess.Persistent.Migrations
                         .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -320,11 +319,11 @@ namespace KALS.DataAccess.Persistent.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsMain")
-                        .HasColumnType("bit");
-
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("isMain")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -397,26 +396,6 @@ namespace KALS.DataAccess.Persistent.Migrations
                     b.HasIndex("SupportRequestId");
 
                     b.ToTable("SupportMessage", (string)null);
-                });
-
-            modelBuilder.Entity("KALS.Domain.Entities.SupportMessageImage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("SupportMessageId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SupportMessageId");
-
-                    b.ToTable("SupportMessageImage", (string)null);
                 });
 
             modelBuilder.Entity("KALS.Domain.Entities.SupportRequest", b =>
@@ -492,7 +471,7 @@ namespace KALS.DataAccess.Persistent.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("4adea8b2-828a-4e1a-8bb8-2a8b6ee59616"),
+                            Id = new Guid("7aab6022-8250-44e9-8a2d-9d5d81e9f538"),
                             FullName = "Admin",
                             Password = "jGl25bVBBBW96Qi9Te4V37Fnqchz/Eu4qB9vKrRIqRg=",
                             PhoneNumber = "0123456789",
@@ -553,7 +532,7 @@ namespace KALS.DataAccess.Persistent.Migrations
             modelBuilder.Entity("KALS.Domain.Entities.Order", b =>
                 {
                     b.HasOne("KALS.Domain.Entities.Member", "Member")
-                        .WithMany("Orders")
+                        .WithMany()
                         .HasForeignKey("MemberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -572,7 +551,7 @@ namespace KALS.DataAccess.Persistent.Migrations
             modelBuilder.Entity("KALS.Domain.Entities.OrderItem", b =>
                 {
                     b.HasOne("KALS.Domain.Entities.Order", "Order")
-                        .WithMany("OrderItems")
+                        .WithMany()
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -651,23 +630,12 @@ namespace KALS.DataAccess.Persistent.Migrations
             modelBuilder.Entity("KALS.Domain.Entities.SupportMessage", b =>
                 {
                     b.HasOne("KALS.Domain.Entities.SupportRequest", "SupportRequest")
-                        .WithMany("SupportMessages")
+                        .WithMany()
                         .HasForeignKey("SupportRequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("SupportRequest");
-                });
-
-            modelBuilder.Entity("KALS.Domain.Entities.SupportMessageImage", b =>
-                {
-                    b.HasOne("KALS.Domain.Entities.SupportMessage", "SupportMessage")
-                        .WithMany("SupportMessageImages")
-                        .HasForeignKey("SupportMessageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SupportMessage");
                 });
 
             modelBuilder.Entity("KALS.Domain.Entities.SupportRequest", b =>
@@ -719,13 +687,6 @@ namespace KALS.DataAccess.Persistent.Migrations
             modelBuilder.Entity("KALS.Domain.Entities.Member", b =>
                 {
                     b.Navigation("LabMembers");
-
-                    b.Navigation("Orders");
-                });
-
-            modelBuilder.Entity("KALS.Domain.Entities.Order", b =>
-                {
-                    b.Navigation("OrderItems");
                 });
 
             modelBuilder.Entity("KALS.Domain.Entities.Payment", b =>
@@ -745,16 +706,6 @@ namespace KALS.DataAccess.Persistent.Migrations
                     b.Navigation("ProductCategories");
 
                     b.Navigation("ProductImages");
-                });
-
-            modelBuilder.Entity("KALS.Domain.Entities.SupportMessage", b =>
-                {
-                    b.Navigation("SupportMessageImages");
-                });
-
-            modelBuilder.Entity("KALS.Domain.Entities.SupportRequest", b =>
-                {
-                    b.Navigation("SupportMessages");
                 });
 #pragma warning restore 612, 618
         }

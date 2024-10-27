@@ -88,10 +88,4 @@ public class ApiEndPointConstant
         public const string ProductImageEndPoint = ApiEndpoint + "/product-images";
         public const string ProductImageById = ProductImageEndPoint + "/{id}";
     }
-    public class WarrantyRequest
-    {
-        public const string WarrantyRequestEndPoint = ApiEndpoint + "/warranty-requests";
-        public const string WarrantyRequestById = WarrantyRequestEndPoint + "/{id}";
-        public const string WarrantyRequestImage = WarrantyRequestById + "/images";
-    }
 }

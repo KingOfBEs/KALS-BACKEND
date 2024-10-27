@@ -26,6 +26,7 @@ public static class DependencyService
         service.AddScoped<IProductRepository, ProductRepository>();
         service.AddScoped<ICategoryRepository, CategoryRepository>();
         service.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
+        service.AddScoped<ILabProductRepository, LabProductRepository>();
         service.AddScoped<IMemberRepository, MemberRepository>();
         service.AddScoped<ILabRepository, LabRepository>();
         service.AddScoped<IUserRepository, UserRepository>();
@@ -38,9 +39,6 @@ public static class DependencyService
         service.AddScoped<IStaffRepository, StaffRepository>();
         service.AddScoped<ISupportRequestRepository, SupportRequestRepository>();
         service.AddScoped<ISupportMessageRepository, SupportMessageRepository>();
-        service.AddScoped<IWarrantyRequestRepository, WarrantyRequestRepository>();
-        service.AddScoped<IWarrantyRequestImageRepository, WarrantyRequestImageRepository>();
-        
         return service;
     }
     public static IServiceCollection AddDatabase(this IServiceCollection service)
@@ -81,7 +79,6 @@ public static class DependencyService
         service.AddHttpClient<IFirebaseService, FirebaseService>();
         service.AddScoped<IGoogleDriveService, GoogleDriveService>();
         service.AddScoped<IRedisService, RedisService>();
-        service.AddScoped<IWarrantyRequestService, WarrantyRequestService>();
         return service;
     }
 

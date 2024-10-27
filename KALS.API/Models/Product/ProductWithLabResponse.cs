@@ -13,6 +13,6 @@ public class ProductWithLabResponse
     public DateTime CreatedAt { get; set; }
     public DateTime ModifiedAt { get; set; }
     public bool IsHidden { get; set; }
-    public List<LabNoProductResponse>? Labs { get; set; }
+    public List<LabResponse>? Labs { get; set; }
     
 }

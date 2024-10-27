@@ -13,7 +13,7 @@ public class GetProductDetailResponse
     public DateTime CreatedAt { get; set; }
     public DateTime ModifiedAt { get; set; }
     public bool IsHidden { get; set; }
-    public List<ChildProductResponse>? ChildProducts { get; set; }
+    public List<GetProductResponse>? ChildProducts { get; set; }
     
     public ICollection<ProductImageResponse>? ProductImages { get; set; }
     

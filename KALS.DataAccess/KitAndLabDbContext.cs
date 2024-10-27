@@ -19,6 +19,7 @@ public class KitAndLabDbContext : DbContext
     public DbSet<Category> Category { get; set; }
     public DbSet<ProductCategory> ProductCategory { get; set; }
     public DbSet<Lab> Lab { get; set; }
+    public DbSet<LabProduct> LabProduct { get; set; }
     public DbSet<Member> Member { get; set; }
     public DbSet<Staff> Staff { get; set; } 
     public DbSet<Payment> Payment { get; set; }
@@ -28,8 +29,6 @@ public class KitAndLabDbContext : DbContext
     public DbSet<SupportMessage> SupportMessage { get; set; }
     public DbSet<ProductImage> ProductImage { get; set; }
     public DbSet<SupportMessageImage> SupportMessageImage { get; set; }
-    public DbSet<WarrantyRequest> WarrantyRequest { get; set; }
-    public DbSet<WarrantyRequestImage> WarrantyRequestImage { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -40,6 +39,7 @@ public class KitAndLabDbContext : DbContext
         modelBuilder.Entity<Category>().ToTable("Category");
         modelBuilder.Entity<ProductCategory>().ToTable("ProductCategory");
         modelBuilder.Entity<Lab>().ToTable("Lab");
+        modelBuilder.Entity<LabProduct>().ToTable("LabProduct");
         modelBuilder.Entity<Member>().ToTable("Member");
         modelBuilder.Entity<Staff>().ToTable("Staff");
         modelBuilder.Entity<Payment>().ToTable("Payment");
@@ -49,8 +49,6 @@ public class KitAndLabDbContext : DbContext
         modelBuilder.Entity<SupportMessage>().ToTable("SupportMessage");
         modelBuilder.Entity<ProductImage>().ToTable("ProductImage");
         modelBuilder.Entity<SupportMessageImage>().ToTable("SupportMessageImage");
-        modelBuilder.Entity<WarrantyRequest>().ToTable("WarrantyRequest");
-        modelBuilder.Entity<WarrantyRequestImage>().ToTable("WarrantyRequestImage");
     }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

@@ -16,10 +16,10 @@ public class ProductMapper: Profile
         CreateMap<Product, CartModelResponse>();
         CreateMap<Product, ProductWithLabResponse>()
             .ForMember(dest => dest.Labs, 
-                opt => opt.MapFrom(src => src.Labs));
+                otp => otp.MapFrom(src => src.LabProducts.Select(lp => lp.Lab)));
         CreateMap<Product, GetProductWithCatogoriesResponse>()
             .ForMember(dest => dest.Categories, 
-                opt => opt.MapFrom(src => src.ProductCategories!.Select(pc => pc.Category)))
+                opt => opt.MapFrom(src => src.ProductCategories.Select(pc => pc.Category)))
             .ForMember(dest => dest.ProductImages, 
                 opt => opt.MapFrom(src => src.ProductImages));
     }

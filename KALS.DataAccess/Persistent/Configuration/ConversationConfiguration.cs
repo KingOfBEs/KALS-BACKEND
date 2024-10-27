@@ -76,14 +76,3 @@ public class SupportMessageConfiguration: IEntityTypeConfiguration<SupportMessag
             );
     }
 }
-public class WarrantyRequestConfiguration: IEntityTypeConfiguration<WarrantyRequest>
-{
-    public void Configure(EntityTypeBuilder<WarrantyRequest> builder)
-    {
-        builder.Property(wr => wr.Status)
-            .HasConversion(
-                wrs => wrs.ToString(),
-                wrs => (WarrantyRequestStatus)Enum.Parse(typeof(WarrantyRequestStatus), wrs)
-            );
-    }
-}

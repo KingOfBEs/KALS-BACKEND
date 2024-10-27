@@ -93,7 +93,7 @@ public class ProductController : BaseController<ProductController>
     [ProducesResponseType(typeof(GetProductResponse), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
     [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
-    public async Task<IActionResult> UpdateProductRelationshipByProductId(Guid id, [FromBody] ICollection<UpdateChildProductForKitRequest> request)
+    public async Task<IActionResult> UpdateProductRelationshipByProductId(Guid id, [FromBody] UpdateChildProductForKitRequest request)
     {
         var response = await _productService.UpdateProductRelationshipByProductIdAsync(id, request);
         if (response == null)
@@ -104,21 +104,21 @@ public class ProductController : BaseController<ProductController>
         _logger.LogInformation($"Update product relationship successful with {id}");
         return Ok(response);
     }
-    // [HttpPatch(ApiEndPointConstant.Product.LabToProduct)]
-    // [ProducesResponseType(typeof(GetProductResponse), statusCode: StatusCodes.Status200OK)]
-    // [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
-    // [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
-    // public async Task<IActionResult> AssignLabToProduct(Guid id, [FromBody] AssignLabsToProductRequest request)
-    // {
-    //     var response = await _labService.AssignLabToProductAsync(id, request);
-    //     if (response == null)
-    //     {
-    //         _logger.LogError($"Assign lab to product failed with {id}");
-    //         return Problem($"{MessageConstant.Lab.AssignLabToProductFail}: {id}");
-    //     }
-    //     _logger.LogInformation($"Assign lab to product successful with {id}");
-    //     return Ok(response);
-    // }
+    [HttpPatch(ApiEndPointConstant.Product.LabToProduct)]
+    [ProducesResponseType(typeof(GetProductResponse), statusCode: StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
+    public async Task<IActionResult> AssignLabToProduct(Guid id, [FromBody] AssignLabsToProductRequest request)
+    {
+        var response = await _labService.AssignLabToProductAsync(id, request);
+        if (response == null)
+        {
+            _logger.LogError($"Assign lab to product failed with {id}");
+            return Problem($"{MessageConstant.Lab.AssignLabToProductFail}: {id}");
+        }
+        _logger.LogInformation($"Assign lab to product successful with {id}");
+        return Ok(response);
+    }
 
     [HttpGet(ApiEndPointConstant.Product.LabToProduct)]
     [ProducesResponseType(typeof(ProductWithLabResponse), statusCode: StatusCodes.Status200OK)]
