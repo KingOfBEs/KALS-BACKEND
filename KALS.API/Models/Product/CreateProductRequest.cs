@@ -16,7 +16,7 @@ public class CreateProductRequest
     public bool IsKit { get; set; }
     [Required]
     public bool IsHidden { get; set; }
-    public List<Guid>? ChildProductIds { get; set; }
+    public List<UpdateChildProductForKitRequest>? RequestChildProducts { get; set; }
     public List<Guid>? CategoryIds { get; set; }
     [Required]
     public string MainImage { get; set; }

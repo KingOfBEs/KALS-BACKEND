@@ -82,8 +82,6 @@ public class OrderService: BaseService<OrderService>, IOrderService
                 throw new BadHttpRequestException(MessageConstant.Order.OrderStatusNotFound);
         }
         
-        // var orderItems = await _unitOfWork.GetRepository<OrderItem>().GetListAsync(
-        //     predicate: oi => oi.OrderId == orderId
         var orderItems = await _orderItemRepository.GetOrderItemByOrderIdAsync(orderId);
         if(orderItems.Any(oi => oi.Product == null)) 
             throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
@@ -94,14 +92,14 @@ public class OrderService: BaseService<OrderService>, IOrderService
                 foreach (var orderItem in orderItems)
                 {
                     var product = await _productRepository.GetProductByIdAsync(orderItem.ProductId);
-                    foreach (var labProduct in product.LabProducts)
+                    foreach (var lab in product.Labs!)
                     {
-                        var existedLabMember = await _labMemberRepository.GetLabMemberByLabIdAndMemberId(labProduct.LabId, order.MemberId);
+                        var existedLabMember = await _labMemberRepository.GetLabMemberByLabIdAndMemberId(lab.Id, order.MemberId);
                         if (existedLabMember != null) continue;
                         await _labMemberRepository.InsertAsync(new LabMember()
                         {
                             MemberId = order.MemberId,
-                            LabId = labProduct.LabId
+                            LabId = lab.Id
                         });
                     }
                 }
@@ -121,9 +119,7 @@ public class OrderService: BaseService<OrderService>, IOrderService
                 return null;
             }
         }
-        
     }
-
     public async Task<ICollection<OrderItemResponse>> GetOrderItemsByOrderId(Guid orderId)
     {
         if (orderId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Order.OrderIdNotNull);

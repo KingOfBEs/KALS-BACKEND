@@ -20,4 +20,14 @@ public class OrderItemRepository: GenericRepository<OrderItem>, IOrderItemReposi
         );
         return orderItem;
     }
+
+    public async Task<OrderItem> GetOrderItemByIdAsync(Guid orderItemId)
+    {
+        var orderItem = await SingleOrDefaultAsync(
+            predicate: oi => oi.Id == orderItemId,
+            include: oi => oi.Include(oi => oi.Product)
+                .ThenInclude(p => p.ProductImages)
+        );
+        return orderItem;
+    }
 }

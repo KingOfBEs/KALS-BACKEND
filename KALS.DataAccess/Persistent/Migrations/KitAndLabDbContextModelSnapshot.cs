@@ -71,12 +71,17 @@ namespace KALS.DataAccess.Persistent.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Url")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
 
                     b.ToTable("Lab", (string)null);
                 });
@@ -97,21 +102,6 @@ namespace KALS.DataAccess.Persistent.Migrations
                     b.HasIndex("MemberId");
 
                     b.ToTable("LabMember");
-                });
-
-            modelBuilder.Entity("KALS.Domain.Entities.LabProduct", b =>
-                {
-                    b.Property<Guid>("LabId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("LabId", "ProductId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("LabProduct", (string)null);
                 });
 
             modelBuilder.Entity("KALS.Domain.Entities.Member", b =>
@@ -219,6 +209,13 @@ namespace KALS.DataAccess.Persistent.Migrations
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
+
+                    b.Property<string>("WarrantyCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("WarrantyExpired")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -340,6 +337,9 @@ namespace KALS.DataAccess.Persistent.Migrations
 
                     b.Property<Guid>("ChildProductId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
 
                     b.HasKey("ParentProductId", "ChildProductId");
 
@@ -492,13 +492,82 @@ namespace KALS.DataAccess.Persistent.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("4adea8b2-828a-4e1a-8bb8-2a8b6ee59616"),
+                            Id = new Guid("3ac85209-cac7-4a7d-a73a-3937fc29ee7b"),
                             FullName = "Admin",
                             Password = "jGl25bVBBBW96Qi9Te4V37Fnqchz/Eu4qB9vKrRIqRg=",
                             PhoneNumber = "0123456789",
                             Role = "Manager",
                             Username = "admin"
                         });
+                });
+
+            modelBuilder.Entity("KALS.Domain.Entities.WarrantyRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("OrderItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RequestContent")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<Guid?>("ResponseBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ResponseContent")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderItemId");
+
+                    b.ToTable("WarrantyRequest", (string)null);
+                });
+
+            modelBuilder.Entity("KALS.Domain.Entities.WarrantyRequestImage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("WarrantyRequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WarrantyRequestId");
+
+                    b.ToTable("WarrantyRequestImage", (string)null);
+                });
+
+            modelBuilder.Entity("KALS.Domain.Entities.Lab", b =>
+                {
+                    b.HasOne("KALS.Domain.Entities.Product", "Product")
+                        .WithMany("Labs")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("KALS.Domain.Entities.LabMember", b =>
@@ -518,25 +587,6 @@ namespace KALS.DataAccess.Persistent.Migrations
                     b.Navigation("Lab");
 
                     b.Navigation("Member");
-                });
-
-            modelBuilder.Entity("KALS.Domain.Entities.LabProduct", b =>
-                {
-                    b.HasOne("KALS.Domain.Entities.Lab", "Lab")
-                        .WithMany("LabProducts")
-                        .HasForeignKey("LabId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("KALS.Domain.Entities.Product", "Product")
-                        .WithMany("LabProducts")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Lab");
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("KALS.Domain.Entities.Member", b =>
@@ -704,6 +754,28 @@ namespace KALS.DataAccess.Persistent.Migrations
                     b.Navigation("Staff");
                 });
 
+            modelBuilder.Entity("KALS.Domain.Entities.WarrantyRequest", b =>
+                {
+                    b.HasOne("KALS.Domain.Entities.OrderItem", "OrderItem")
+                        .WithMany()
+                        .HasForeignKey("OrderItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("OrderItem");
+                });
+
+            modelBuilder.Entity("KALS.Domain.Entities.WarrantyRequestImage", b =>
+                {
+                    b.HasOne("KALS.Domain.Entities.WarrantyRequest", "WarrantyRequest")
+                        .WithMany("WarrantyRequestImages")
+                        .HasForeignKey("WarrantyRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("WarrantyRequest");
+                });
+
             modelBuilder.Entity("KALS.Domain.Entities.Category", b =>
                 {
                     b.Navigation("ProductCategories");
@@ -712,8 +784,6 @@ namespace KALS.DataAccess.Persistent.Migrations
             modelBuilder.Entity("KALS.Domain.Entities.Lab", b =>
                 {
                     b.Navigation("LabMembers");
-
-                    b.Navigation("LabProducts");
                 });
 
             modelBuilder.Entity("KALS.Domain.Entities.Member", b =>
@@ -738,7 +808,7 @@ namespace KALS.DataAccess.Persistent.Migrations
                 {
                     b.Navigation("ChildProducts");
 
-                    b.Navigation("LabProducts");
+                    b.Navigation("Labs");
 
                     b.Navigation("ParentProducts");
 
@@ -755,6 +825,11 @@ namespace KALS.DataAccess.Persistent.Migrations
             modelBuilder.Entity("KALS.Domain.Entities.SupportRequest", b =>
                 {
                     b.Navigation("SupportMessages");
+                });
+
+            modelBuilder.Entity("KALS.Domain.Entities.WarrantyRequest", b =>
+                {
+                    b.Navigation("WarrantyRequestImages");
                 });
 #pragma warning restore 612, 618
         }
