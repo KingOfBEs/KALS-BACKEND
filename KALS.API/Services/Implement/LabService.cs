@@ -18,7 +18,6 @@ namespace KALS.API.Services.Implement;
 public class LabService: BaseService<LabService>, ILabService
 {
     private readonly IProductRepository _productRepository;
-    private readonly ILabProductRepository _labProductRepository;
     private readonly ILabRepository _labRepository;
     private readonly IMemberRepository _memberRepository;
     private readonly IUserRepository _userRepository;
@@ -28,12 +27,11 @@ public class LabService: BaseService<LabService>, ILabService
     
     public LabService(ILogger<LabService> logger, IMapper mapper, 
         IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IProductRepository productRepository, 
-        ILabProductRepository labProductRepository, ILabRepository labRepository, IMemberRepository memberRepository, 
+        ILabRepository labRepository, IMemberRepository memberRepository, 
         IUserRepository userRepository, ILabMemberRepository labMemberRepository, IFirebaseService firebaseService,
         IGoogleDriveService googleDriveService) : base(logger, mapper, httpContextAccessor, configuration)
     {
         _productRepository = productRepository;
-        _labProductRepository = labProductRepository;
         _labRepository = labRepository;
         _memberRepository = memberRepository;
         _userRepository = userRepository;
@@ -42,75 +40,75 @@ public class LabService: BaseService<LabService>, ILabService
         _googleDriveService = googleDriveService;
     }
 
-    public async Task<GetProductResponse> AssignLabToProductAsync(Guid productId, AssignLabsToProductRequest request)
-    {
-        if(productId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Product.ProductIdNotNull);
-        var product = await _productRepository.GetProductByIdAsync(productId);
-        if(product == null) throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
-        
-        var (newLabIds, removeLabIds) = await _labProductRepository.GetNewAndRemoveLabIdsAsync(productId, request.LabIds);
-        if(!newLabIds.Any() && !removeLabIds.Any()) return _mapper.Map<GetProductResponse>(product);
-        var members = await _memberRepository.GetMembersOrderProductAsync(productId);
-        if (members != null)
-        {
-            var removeLabMembers = await _labMemberRepository.GetLabMembersByLabIds(removeLabIds);
-            if (removeLabIds.Any())
-            {
-                foreach (var labMember in removeLabMembers)
-                {
-                    _labMemberRepository.DeleteAsync(labMember);
-                }
-            }
-            if (newLabIds.Any())
-            {
-                foreach (var member in members)
-                {
-                    foreach (var newLabId in newLabIds)
-                    {
-                        bool isMemberInLab = await _labMemberRepository.IsMemberInLab(member.Id, newLabId);
-                        if (!isMemberInLab)
-                        {
-                            await _labMemberRepository.InsertAsync(
-                                new LabMember()
-                                {
-                                    LabId = newLabId,
-                                    MemberId = member.Id
-                                }
-                            ); 
-                        }
-                    }
-                }
-            }
-        }
-        if (removeLabIds.Any())
-        {
-            // var removeLabProducts = product.LabProducts.Where(lp => removeLabIds.Contains(lp.LabId)).ToList();
-            var removeLabProducts = await _labProductRepository.GetLabProductsByLabIds(removeLabIds);
-            foreach (var removeLabProduct in removeLabProducts)
-            {
-                _labProductRepository.DeleteAsync(removeLabProduct);
-            }
-        }
-        if (newLabIds.Any())
-        {
-            foreach (var newLabId in newLabIds)
-            {
-                var newLab = await _labRepository.GetLabByIdAsync(newLabId);
-                if (newLab != null)
-                {
-                    await _labProductRepository.InsertAsync(new LabProduct()
-                    {
-                        LabId = newLabId,
-                        ProductId = productId
-                    });
-                }
-            }
-        }
-        GetProductResponse response = null;
-        bool isSuccess = await _labProductRepository.SaveChangesAsync();
-        if(isSuccess) response = _mapper.Map<GetProductResponse>(product);
-        return response;
-    }
+    // public async Task<GetProductResponse> AssignLabToProductAsync(Guid productId, AssignLabsToProductRequest request)
+    // {
+    //     if(productId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Product.ProductIdNotNull);
+    //     var product = await _productRepository.GetProductByIdAsync(productId);
+    //     if(product == null) throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
+    //     
+    //     var (newLabIds, removeLabIds) = await _labProductRepository.GetNewAndRemoveLabIdsAsync(productId, request.LabIds);
+    //     if(!newLabIds.Any() && !removeLabIds.Any()) return _mapper.Map<GetProductResponse>(product);
+    //     var members = await _memberRepository.GetMembersOrderProductAsync(productId);
+    //     if (members != null)
+    //     {
+    //         var removeLabMembers = await _labMemberRepository.GetLabMembersByLabIds(removeLabIds);
+    //         if (removeLabIds.Any())
+    //         {
+    //             foreach (var labMember in removeLabMembers)
+    //             {
+    //                 _labMemberRepository.DeleteAsync(labMember);
+    //             }
+    //         }
+    //         if (newLabIds.Any())
+    //         {
+    //             foreach (var member in members)
+    //             {
+    //                 foreach (var newLabId in newLabIds)
+    //                 {
+    //                     bool isMemberInLab = await _labMemberRepository.IsMemberInLab(member.Id, newLabId);
+    //                     if (!isMemberInLab)
+    //                     {
+    //                         await _labMemberRepository.InsertAsync(
+    //                             new LabMember()
+    //                             {
+    //                                 LabId = newLabId,
+    //                                 MemberId = member.Id
+    //                             }
+    //                         ); 
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     if (removeLabIds.Any())
+    //     {
+    //         // var removeLabProducts = product.LabProducts.Where(lp => removeLabIds.Contains(lp.LabId)).ToList();
+    //         var removeLabProducts = await _labProductRepository.GetLabProductsByLabIds(removeLabIds);
+    //         foreach (var removeLabProduct in removeLabProducts)
+    //         {
+    //             _labProductRepository.DeleteAsync(removeLabProduct);
+    //         }
+    //     }
+    //     if (newLabIds.Any())
+    //     {
+    //         foreach (var newLabId in newLabIds)
+    //         {
+    //             var newLab = await _labRepository.GetLabByIdAsync(newLabId);
+    //             if (newLab != null)
+    //             {
+    //                 await _labProductRepository.InsertAsync(new LabProduct()
+    //                 {
+    //                     LabId = newLabId,
+    //                     ProductId = productId
+    //                 });
+    //             }
+    //         }
+    //     }
+    //     GetProductResponse response = null;
+    //     bool isSuccess = await _labProductRepository.SaveChangesAsync();
+    //     if(isSuccess) response = _mapper.Map<GetProductResponse>(product);
+    //     return response;
+    // }
 
     public async Task<IPaginate<LabResponse>> GetLabsAsync(int page, int size, string? searchName)
     {
@@ -127,14 +125,13 @@ public class LabService: BaseService<LabService>, ILabService
                 
                 var labsByMember = await _labRepository.GetLabsPagingByMemberId(member.Id, page, size, searchName);
                 labsResponse = _mapper.Map<IPaginate<LabResponse>>(labsByMember);
-                labsResponse.Items.Select(lr => lr.ProductNames = labsByMember.Items.SelectMany(l => l.LabProducts)
-                    .Where(lp => lp.LabId == lr.Id)
-                    .Select(lp => lp.Product.Name).ToList());
+                labsResponse.Items.Select(l => l.Product = _mapper.Map<GetProductResponse>(l.Product));
                 break;
             case RoleEnum.Manager:
             case RoleEnum.Staff:
                 var labsByManager = await _labRepository.GetLabsPagingAsync(page, size, searchName);
                 labsResponse = _mapper.Map<IPaginate<LabResponse>>(labsByManager);
+                labsResponse.Items.Select(l => l.Product = _mapper.Map<GetProductResponse>(l.Product));
                 break;
             default:
                 throw new BadHttpRequestException(MessageConstant.User.RoleNotFound);
@@ -162,11 +159,11 @@ public class LabService: BaseService<LabService>, ILabService
     {
         var userId = GetUserIdFromJwt();
         if (userId == Guid.Empty) throw new UnauthorizedAccessException(MessageConstant.User.UserNotFound);
-        // var user = await _unitOfWork.GetRepository<User>().SingleOrDefaultAsync(
-        //     predicate: u => u.Id == userId
-        // );
         var user = await _userRepository.GetUserByIdAsync(userId);
         if(user == null) throw new UnauthorizedAccessException(MessageConstant.User.UserNotFound);
+        var product = await _productRepository.GetProductByIdAsync(request.ProductId);
+        if (product == null) throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
+        if (!product.IsKit) throw new BadHttpRequestException(MessageConstant.Product.ProductIsNotKit);
         
         var googleDriveResponse = await _googleDriveService.UploadToGoogleDrive(request.File);
         if (googleDriveResponse == null) throw new BadHttpRequestException(MessageConstant.Lab.UploadFileFail);
@@ -184,13 +181,14 @@ public class LabService: BaseService<LabService>, ILabService
         bool isSuccess = await _labRepository.SaveChangesAsync();
         LabResponse labResponse = null;
         if (isSuccess) labResponse = _mapper.Map<LabResponse>(lab);
+        labResponse.Product = _mapper.Map<GetProductResponse>(product);
         return labResponse;
     }
 
-    public async Task<LabResponse> UpdateLabAsync(Guid labId, UpdateLabRequest request)
+    public async Task<LabNoProductResponse> UpdateLabAsync(Guid labId, UpdateLabRequest request)
     {
         if (labId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Lab.LabIdNotNull);
-        var lab = await _labRepository.GetLabByIdAsync(labId);
+        var lab = await _labRepository.GetLabByIdNoProductAsync(labId);
         if (lab == null) throw new BadHttpRequestException(MessageConstant.Lab.LabNotFound);
 
         if (request.File != null)
@@ -199,13 +197,23 @@ public class LabService: BaseService<LabService>, ILabService
             if (googleDriveResponse.Url == null) throw new BadHttpRequestException(MessageConstant.Lab.UploadFileFail);
             lab.Url = googleDriveResponse.Url;
         }
-
         lab.Name = !string.IsNullOrEmpty(request.Name) ? request.Name : lab.Name;
-
+        if (request.ProductId != null)
+        {
+            var product = await _productRepository.GetProductByIdAsync(request.ProductId.Value);
+            if (product == null) throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
+            if (!product.IsKit) throw new BadHttpRequestException(MessageConstant.Product.ProductIsNotKit);
+            lab.ProductId = product.Id;
+        }
+        lab.ModifiedAt = TimeUtil.GetCurrentSEATime();
+        lab.ModifiedBy = GetUserIdFromJwt();
         _labRepository.UpdateAsync(lab);
         var isSuccess = await _labRepository.SaveChangesAsync();
-        LabResponse response = null;
-        if (isSuccess) response = _mapper.Map<LabResponse>(lab);
+        LabNoProductResponse response = null;
+        if (isSuccess)
+        {
+            response = _mapper.Map<LabNoProductResponse>(lab);
+        }
         return response;
     }
 }

@@ -13,13 +13,12 @@ public class Product: BaseEntity
     public DateTime CreatedAt { get; set; }
     public DateTime ModifiedAt { get; set; }
     public bool IsHidden { get; set; }
-    
     public bool IsKit { get; set; }
     
     
     public virtual ICollection<ProductRelationship>? ParentProducts { get; set; } 
     public virtual ICollection<ProductRelationship>? ChildProducts { get; set; } 
-    public virtual ICollection<LabProduct>? LabProducts { get; set; }
+    public virtual ICollection<Lab>? Labs { get; set; }
     public virtual ICollection<ProductCategory>? ProductCategories { get; set; }
     public virtual ICollection<ProductImage>? ProductImages { get; set; }
 }

@@ -10,4 +10,6 @@ public class ProductRelationship
     [ForeignKey(nameof(ChildProductId))]
     public Product ChildProduct { get; set; }
     
+    public int Quantity { get; set; }
+    
 }

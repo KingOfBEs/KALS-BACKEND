@@ -29,6 +29,14 @@ public class ProductImageRepository: GenericRepository<ProductImage>, IProductIm
         return productImages;
     }
 
+    public async Task<List<Guid>> GetRemovedProductImageIdsAsync(Guid productId, List<Guid> requestedImageIds)
+    {
+        var productImages = await GetListAsync(
+            predicate: pi => pi.ProductId == productId && !requestedImageIds.Contains(pi.Id)
+        );
+        return productImages.Select(pi => pi.Id).ToList();
+    }
+
     public async Task<ICollection<ProductImage>> GetDeletedProductImagesByProductId(Guid productId, List<Guid> requestProductImageId)
     {
         var productImages = await GetListAsync(

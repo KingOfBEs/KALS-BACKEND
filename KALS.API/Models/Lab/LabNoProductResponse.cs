@@ -1,8 +1,6 @@
-using KALS.API.Models.Product;
-
 namespace KALS.API.Models.Lab;
 
-public class LabResponse
+public class LabNoProductResponse
 {
     public Guid Id { get; set; }
     public string Name { get; set; }
@@ -11,5 +9,4 @@ public class LabResponse
     public DateTime ModifiedAt { get; set; }
     public Guid CreatedBy { get; set; }
     public Guid ModifiedBy { get; set; }
-    public GetProductResponse Product { get; set; }
 }

@@ -27,23 +27,6 @@ namespace KALS.DataAccess.Persistent.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Lab",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    Url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ModifiedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Lab", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Payment",
                 columns: table => new
                 {
@@ -96,27 +79,27 @@ namespace KALS.DataAccess.Persistent.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "LabProduct",
+                name: "Lab",
                 columns: table => new
                 {
-                    LabId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ModifiedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_LabProduct", x => new { x.LabId, x.ProductId });
+                    table.PrimaryKey("PK_Lab", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_LabProduct_Lab_LabId",
-                        column: x => x.LabId,
-                        principalTable: "Lab",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_LabProduct_Product_ProductId",
+                        name: "FK_Lab_Product_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Product",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -144,11 +127,32 @@ namespace KALS.DataAccess.Persistent.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ProductImage",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsMain = table.Column<bool>(type: "bit", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductImage", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductImage_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ProductRelationship",
                 columns: table => new
                 {
                     ParentProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ChildProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    ChildProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -174,8 +178,11 @@ namespace KALS.DataAccess.Persistent.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Province = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    ProvinceCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     District = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    Ward = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    DistrictCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Commune = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    CommuneCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Address = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
@@ -209,12 +216,39 @@ namespace KALS.DataAccess.Persistent.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "LabMember",
+                columns: table => new
+                {
+                    LabId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MemberId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    NumberOfRequest = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LabMember", x => new { x.LabId, x.MemberId });
+                    table.ForeignKey(
+                        name: "FK_LabMember_Lab_LabId",
+                        column: x => x.LabId,
+                        principalTable: "Lab",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_LabMember_Member_MemberId",
+                        column: x => x.MemberId,
+                        principalTable: "Member",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Order",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Total = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     MemberId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -242,17 +276,22 @@ namespace KALS.DataAccess.Persistent.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    NumberOfRequest = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     MemberId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StaffId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StaffId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     LabId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SupportRequest", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SupportRequest_LabMember_LabId_MemberId",
+                        columns: x => new { x.LabId, x.MemberId },
+                        principalTable: "LabMember",
+                        principalColumns: new[] { "LabId", "MemberId" },
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_SupportRequest_Lab_LabId",
                         column: x => x.LabId,
@@ -323,15 +362,39 @@ namespace KALS.DataAccess.Persistent.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "SupportMessageImage",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SupportMessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SupportMessageImage", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SupportMessageImage_SupportMessage_SupportMessageId",
+                        column: x => x.SupportMessageId,
+                        principalTable: "SupportMessage",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "User",
                 columns: new[] { "Id", "FullName", "Password", "PhoneNumber", "Role", "Username" },
-                values: new object[] { new Guid("eebf6e74-47f7-497e-8cb9-ec94c110dd8c"), "Admin", "jGl25bVBBBW96Qi9Te4V37Fnqchz/Eu4qB9vKrRIqRg=", "0123456789", "Manager", "admin" });
+                values: new object[] { new Guid("e1f55677-a46e-4b23-be05-aad9b2823184"), "Admin", "jGl25bVBBBW96Qi9Te4V37Fnqchz/Eu4qB9vKrRIqRg=", "0123456789", "Manager", "admin" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_LabProduct_ProductId",
-                table: "LabProduct",
+                name: "IX_Lab_ProductId",
+                table: "Lab",
                 column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LabMember_MemberId",
+                table: "LabMember",
+                column: "MemberId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Member_UserId",
@@ -365,6 +428,11 @@ namespace KALS.DataAccess.Persistent.Migrations
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ProductImage_ProductId",
+                table: "ProductImage",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ProductRelationship_ChildProductId",
                 table: "ProductRelationship",
                 column: "ChildProductId");
@@ -380,9 +448,14 @@ namespace KALS.DataAccess.Persistent.Migrations
                 column: "SupportRequestId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SupportRequest_LabId",
+                name: "IX_SupportMessageImage_SupportMessageId",
+                table: "SupportMessageImage",
+                column: "SupportMessageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SupportRequest_LabId_MemberId",
                 table: "SupportRequest",
-                column: "LabId");
+                columns: new[] { "LabId", "MemberId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_SupportRequest_MemberId",
@@ -399,19 +472,19 @@ namespace KALS.DataAccess.Persistent.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "LabProduct");
-
-            migrationBuilder.DropTable(
                 name: "OrderItem");
 
             migrationBuilder.DropTable(
                 name: "ProductCategory");
 
             migrationBuilder.DropTable(
+                name: "ProductImage");
+
+            migrationBuilder.DropTable(
                 name: "ProductRelationship");
 
             migrationBuilder.DropTable(
-                name: "SupportMessage");
+                name: "SupportMessageImage");
 
             migrationBuilder.DropTable(
                 name: "Order");
@@ -420,13 +493,19 @@ namespace KALS.DataAccess.Persistent.Migrations
                 name: "Category");
 
             migrationBuilder.DropTable(
-                name: "Product");
+                name: "SupportMessage");
+
+            migrationBuilder.DropTable(
+                name: "Payment");
 
             migrationBuilder.DropTable(
                 name: "SupportRequest");
 
             migrationBuilder.DropTable(
-                name: "Payment");
+                name: "LabMember");
+
+            migrationBuilder.DropTable(
+                name: "Staff");
 
             migrationBuilder.DropTable(
                 name: "Lab");
@@ -435,7 +514,7 @@ namespace KALS.DataAccess.Persistent.Migrations
                 name: "Member");
 
             migrationBuilder.DropTable(
-                name: "Staff");
+                name: "Product");
 
             migrationBuilder.DropTable(
                 name: "User");

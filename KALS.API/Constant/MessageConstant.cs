@@ -46,6 +46,7 @@ public class MessageConstant
         public const string ProductOutOfStock = "Sản phẩm đã hết hàng";
         public const string CreateProductFailed = "Tạo sản phẩm không thành công";
         public const string ProductIsNotKit = "Sản phẩm không phải là Kit";
+        public const string PriceMustBeSmallerThanExpectedPrice = "Giá bán phải nhỏ hơn giá dự kiến";
 
     }
     public static class Lab
@@ -108,6 +109,7 @@ public class MessageConstant
     public static class OrderItem
     {
         public const string CreateOrderItemFail = "Tạo order item không thành công";
+        public const string OrderItemNotFound = "Order item không tồn tại";
     }
     public static class SupportRequest
     {
@@ -134,5 +136,18 @@ public class MessageConstant
         public const string UploadImageFail = "Upload ảnh không thành công";
         public const string AddProductImageFail = "Thêm ảnh sản phẩm không thành công";
         public const string WrongMainImageQuantity = "Bắt buộc phải có một ảnh chính";
+    }
+
+    public static class WarrantyRequest
+    {
+        public const string WarrantyExpired = "Hết hạn bảo hành";
+        public const string UploadImageFailed = "Upload ảnh không thành công";
+        public const string CreateWarrantyRequestFail = "Tạo yêu cầu bảo hành không thành công";
+        public const string WarrantyRequestIdNotNull = "Id yêu cầu bảo hành không được để trống";
+        public const string WarrantyRequestNotFound = "Yêu cầu bảo hành không tồn tại";
+        public const string WarrantyRequestAccepted =  "Yêu cầu bảo hành đã được chấp nhận";
+        public const string WarrantyRequestDenied = "Yêu cầu bảo hành đã bị từ chối";
+        public const string WarrantyRequestStatusInvalid = "Trạng thái yêu cầu bảo hành không hợp lệ";
+        public const string UpdateWarrantyRequestFail = "Cập nhật yêu cầu bảo hành không thành công";
     }
 }

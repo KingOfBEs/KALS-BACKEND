@@ -12,7 +12,8 @@ public class LabMapper: Profile
     {
         CreateMap<CreateLabRequest, Lab>();
         CreateMap<Lab, LabResponse>()
-        .ForMember(dest => dest.ProductNames,
-            opt => opt.MapFrom(src => src.LabProducts!.Select(lp => lp.Product.Name).ToList()));
+            .ForMember(dest => dest.Product, 
+                opt => opt.MapFrom(src => src.Product));
+        CreateMap<Lab, LabNoProductResponse>();
     }
 }

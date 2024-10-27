@@ -21,8 +21,7 @@ public class ProductRepository: GenericRepository<Product>, IProductRepository
             include: p => p.Include(p => p.ChildProducts)
                 .ThenInclude(cp => cp.ChildProduct)
                 .Include(p => p.ProductImages)
-                .Include(p => p.LabProducts)
-                .ThenInclude(p => p.Lab)
+                .Include(p => p.Labs)
                 .Include(p => p.ProductCategories)
                 .ThenInclude(pc => pc.Category)
         );
@@ -113,9 +112,9 @@ public class ProductRepository: GenericRepository<Product>, IProductRepository
                 IsKit = p.IsKit,
                 CreatedAt = p.CreatedAt,
                 ModifiedAt = p.ModifiedAt,
+                Labs = p.Labs.Any(l => l.ProductId == p.Id) ? p.Labs : null,
                 ProductCategories = p.ProductCategories.Any(pc => pc.ProductId == p.Id) ? p.ProductCategories : null,
                 ProductImages = p.ProductImages.Any(pi => pi.ProductId == p.Id) ? p.ProductImages : null,
-                LabProducts = p.LabProducts.Any(lp => lp.ProductId == p.Id) ? p.LabProducts : null,
                 ChildProducts = p.ChildProducts.Any(cp => cp.ParentProductId == p.Id) ? p.ChildProducts : null
             },
             predicate: p => p.ProductCategories.Any(pc => pc.CategoryId == categoryId),

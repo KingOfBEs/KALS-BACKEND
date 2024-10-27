@@ -8,5 +8,5 @@ public interface IProductImageRepository: IGenericRepository<ProductImage>
 
     Task<ICollection<ProductImage>> GetProductImagesByProductId(Guid productId);
     
-    
+    Task<List<Guid>> GetRemovedProductImageIdsAsync(Guid productId, List<Guid> requestedImageIds);
 }

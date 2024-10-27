@@ -8,6 +8,8 @@ public class OrderItem: BaseEntity
     public int Quantity { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime ModifiedAt { get; set; }
+    public string WarrantyCode { get; set; }
+    public DateTime? WarrantyExpired { get; set; }
     public Guid OrderId { get; set; }
     [ForeignKey(nameof(OrderId))]
     public Order Order { get; set; }
