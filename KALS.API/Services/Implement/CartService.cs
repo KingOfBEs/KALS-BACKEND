@@ -20,7 +20,6 @@ public class CartService: BaseService<CartService>, ICartService
         _userRepository = userRepository;
         _redisService = redisService;
     }
-
     public async Task<ICollection<CartModelResponse>> AddToCartAsync(CartModel request)
     {
         var userId = GetUserIdFromJwt();
