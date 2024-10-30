@@ -15,6 +15,9 @@ public class SupportRequestMapper: Profile
                 opt => opt.MapFrom(src =>
                     src.SupportMessages!.SelectMany(x => x.SupportMessageImages).Select(x => x.ImageUrl)))
             .ForMember(dest => dest.Member,
-                opt => opt.MapFrom(src => src.Member));
+                opt => opt.MapFrom(src => src.Member))
+            .ForMember(dest => dest.Lab,
+                opt => opt.MapFrom(src => src.LabMember.Lab))
+            ;
     }
 }

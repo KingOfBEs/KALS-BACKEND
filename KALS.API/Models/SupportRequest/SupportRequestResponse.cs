@@ -1,3 +1,4 @@
+using KALS.API.Models.Lab;
 using KALS.API.Models.User;
 using KALS.Domain.Enums;
 
@@ -11,7 +12,7 @@ public class SupportRequestResponse
     public SupportRequestStatus Status { get; set; }
     
     public ICollection<SupportMessageResponse>? SupportMessages { get; set; }
-    
+    public LabResponse Lab { get; set; }
     public ICollection<string>? ImageUrls { get; set; }
     public MemberResponse Member { get; set; }
 }

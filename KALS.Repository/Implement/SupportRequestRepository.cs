@@ -60,6 +60,7 @@ public class SupportRequestRepository: GenericRepository<SupportRequest>, ISuppo
                 .Include(sr => sr.Lab)
                 .Include(sr => sr.Staff)
                 .Include(sr => sr.LabMember)
+                .ThenInclude(sr => sr.Lab)
                 .Include(sr => sr.SupportMessages)
                 .ThenInclude(sm => sm.SupportMessageImages)
         );
@@ -94,6 +95,7 @@ public class SupportRequestRepository: GenericRepository<SupportRequest>, ISuppo
                 .Include(sr => sr.Lab)
                 .Include(sr => sr.Staff)
                 .Include(sr => sr.LabMember)
+                .ThenInclude(lm => lm.Lab)
                 .Include(sr => sr.SupportMessages)
                 .ThenInclude(sm => sm.SupportMessageImages)
         );
