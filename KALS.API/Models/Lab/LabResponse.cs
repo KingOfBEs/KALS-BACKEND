@@ -11,5 +11,6 @@ public class LabResponse
     public DateTime ModifiedAt { get; set; }
     public Guid CreatedBy { get; set; }
     public Guid ModifiedBy { get; set; }
+    public int? NumberOfRequest { get; set; }
     public GetProductResponse Product { get; set; }
 }

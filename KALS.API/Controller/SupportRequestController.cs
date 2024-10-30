@@ -77,4 +77,12 @@ public class SupportRequestController: BaseController<SupportRequestController>
         var response = await _supportRequestService.GetSupportRequestPagingAsync(page, size, filter, sortBy, isAsc);
         return Ok(response);
     }
+    [HttpGet(ApiEndPointConstant.SupportRequest.SupportRequestById)]
+    [ProducesResponseType(typeof(SupportRequestResponse), statusCode: StatusCodes.Status200OK)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Member, RoleEnum.Staff)]
+    public async Task<IActionResult> GetSupportRequestById(Guid id)
+    {
+        var response = await _supportRequestService.GetSupportRequestByIdAsync(id);
+        return Ok(response);
+    }
 }

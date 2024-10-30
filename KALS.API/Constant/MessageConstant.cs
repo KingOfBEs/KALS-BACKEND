@@ -119,6 +119,7 @@ public class MessageConstant
         public const string SupportRequestNotFound = "Không tìm thấy yêu cầu hỗ trợ";
         public const string SupportRequestClosed = "Yêu cầu hỗ trợ đã đóng";
         public const string ResponseSupportRequestFail = "Trả lời yêu cầu hỗ trợ không thành công";
+        public const string CannotAccessToSupportRequest = "Không có quyền truy cập yêu cầu hỗ trợ";
     }
 
     public static class LabMember

@@ -13,11 +13,11 @@ public class LabRepository: GenericRepository<Lab>, ILabRepository
     {
     }
 
-    public async Task<Lab> GetLabByIdAsync(Guid id)
+    public async Task<Lab> GetLabByIdAsync(Guid id, Guid? memberId)
     {
         var lab = await SingleOrDefaultAsync(
             predicate: l => l.Id == id,
-            include: l => l.Include(l => l.LabMembers)
+            include: l => l.Include(l =>  l.LabMembers!.Where(lm => memberId == null || lm.MemberId == memberId))
                 .ThenInclude(lm => lm.Member)
                 .Include(l => l.Product)
                 .ThenInclude(p => p.ProductImages)
@@ -55,7 +55,7 @@ public class LabRepository: GenericRepository<Lab>, ILabRepository
             size: size,
             orderBy: l => l.OrderByDescending(l => l.CreatedAt),
             filter: null,
-            include: l => l.Include(l => l.LabMembers)
+            include: l => l.Include(l => l.LabMembers!.Where(lm => lm.MemberId.Equals(memberId)))
                 .ThenInclude(lm => lm.Member)
                 .Include(l => l.Product)
                 .ThenInclude(p => p.ProductImages)
@@ -75,7 +75,6 @@ public class LabRepository: GenericRepository<Lab>, ILabRepository
                 CreatedBy = l.CreatedBy,
                 ModifiedBy = l.ModifiedBy,
                 Url = l.Url,
-                LabMembers = l.LabMembers,
                 Product = l.Product
             },
             predicate: l => (searchName.IsNullOrEmpty() || l.Name.Contains(searchName!)),
@@ -85,8 +84,7 @@ public class LabRepository: GenericRepository<Lab>, ILabRepository
             filter: null,
             include: l => l.Include(l => l.Product)
                 .ThenInclude(p => p.ProductImages)
-                .Include(l => l.LabMembers)
-                .ThenInclude(lm => lm.Member)
+            
         );
         return labs;
     }

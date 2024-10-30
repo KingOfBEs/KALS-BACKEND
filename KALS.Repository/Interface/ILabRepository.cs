@@ -5,7 +5,7 @@ namespace KALS.Repository.Interface;
 
 public interface ILabRepository: IGenericRepository<Lab>
 {
-    Task<Lab> GetLabByIdAsync(Guid id);
+    Task<Lab> GetLabByIdAsync(Guid id, Guid? memberId);
     
     Task<Lab> GetLabByIdNoProductAsync(Guid id);
     

@@ -8,6 +8,8 @@ public class SupportMessageMapper: Profile
 {
     public SupportMessageMapper()
     {
-        CreateMap<SupportMessage, SupportMessageResponse>();
+        CreateMap<SupportMessage, SupportMessageResponse>()
+            .ForMember(dest => dest.SupportMessageImages,
+                opt => opt.MapFrom(src => src.SupportMessageImages));
     }
 }

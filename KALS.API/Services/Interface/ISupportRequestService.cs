@@ -11,4 +11,6 @@ public interface ISupportRequestService
     Task<SupportRequestResponse> ResponseSupportMessage( Guid supportRequestId, ResponseSupportRequest request);
     
     Task<IPaginate<SupportRequestResponse>> GetSupportRequestPagingAsync(int page, int size, SupportRequestFilter? filter, string? sortBy, bool isAsc);
+    
+    Task<SupportRequestResponse> GetSupportRequestByIdAsync(Guid id);
 }

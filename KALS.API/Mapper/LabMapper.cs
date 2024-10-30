@@ -12,8 +12,10 @@ public class LabMapper: Profile
     {
         CreateMap<CreateLabRequest, Lab>();
         CreateMap<Lab, LabResponse>()
-            .ForMember(dest => dest.Product, 
-                opt => opt.MapFrom(src => src.Product));
+            .ForMember(dest => dest.Product,
+                opt => opt.MapFrom(src => src.Product))
+            .ForMember(dest => dest.NumberOfRequest,
+                opt => opt.MapFrom(src => src.LabMembers != null ? src.LabMembers.FirstOrDefault()!.NumberOfRequest : (int?)null));
         CreateMap<Lab, LabNoProductResponse>();
     }
 }

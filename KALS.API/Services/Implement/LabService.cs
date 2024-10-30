@@ -125,13 +125,11 @@ public class LabService: BaseService<LabService>, ILabService
                 
                 var labsByMember = await _labRepository.GetLabsPagingByMemberId(member.Id, page, size, searchName);
                 labsResponse = _mapper.Map<IPaginate<LabResponse>>(labsByMember);
-                labsResponse.Items.Select(l => l.Product = _mapper.Map<GetProductResponse>(l.Product));
                 break;
             case RoleEnum.Manager:
             case RoleEnum.Staff:
                 var labsByManager = await _labRepository.GetLabsPagingAsync(page, size, searchName);
                 labsResponse = _mapper.Map<IPaginate<LabResponse>>(labsByManager);
-                labsResponse.Items.Select(l => l.Product = _mapper.Map<GetProductResponse>(l.Product));
                 break;
             default:
                 throw new BadHttpRequestException(MessageConstant.User.RoleNotFound);
@@ -141,10 +139,25 @@ public class LabService: BaseService<LabService>, ILabService
 
     public async Task<LabResponse> GetLabByIdAsync(Guid labId)
     {
+        var role = GetRoleFromJwt();
+        var userId = GetUserIdFromJwt();
+        if(userId == null) throw new UnauthorizedAccessException(MessageConstant.User.UserNotFound);
+        LabResponse response = null;
         if(labId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Lab.LabIdNotNull);
-        var lab = await _labRepository.GetLabByIdAsync(labId);
-        
-        return _mapper.Map<LabResponse>(lab);
+        if (role == RoleEnum.Member)
+        {
+            var member = await _memberRepository.GetMemberByUserId(userId);
+            if (member == null) throw new BadHttpRequestException(MessageConstant.User.MemberNotFound);
+            var labWithMember = await _labRepository.GetLabByIdAsync(labId, member.Id);
+            response = _mapper.Map<LabResponse>(labWithMember);
+        }
+        else if (role == RoleEnum.Manager || role == RoleEnum.Staff)
+        {
+            var lab = await _labRepository.GetLabByIdAsync(labId, null);
+            response = _mapper.Map<LabResponse>(lab);
+            response.NumberOfRequest = null;
+        }
+        return response;
     }
 
     public async Task<ProductWithLabResponse> GetLabsByProductIdAsync(Guid productId)

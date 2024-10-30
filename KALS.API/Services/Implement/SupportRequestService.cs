@@ -196,6 +196,7 @@ public class SupportRequestService: BaseService<SupportRequestService>, ISupport
                 if (member == null) throw new UnauthorizedAccessException(MessageConstant.User.MemberNotFound);
                 
                 supportRequests = await _supportRequestRepository.GetSupportRequestPagingByMemberIdAsync(member.Id, page, size, filter, sortBy, isAsc);
+                
                 break;
             case RoleEnum.Staff:
             case RoleEnum.Manager:
@@ -205,6 +206,21 @@ public class SupportRequestService: BaseService<SupportRequestService>, ISupport
                 throw new BadHttpRequestException(MessageConstant.User.RoleNotFound);
         }
         var response = _mapper.Map<IPaginate<SupportRequestResponse>>(supportRequests);
+        return response;
+    }
+
+    public async Task<SupportRequestResponse> GetSupportRequestByIdAsync(Guid id)
+    {
+        var role = GetRoleFromJwt();
+        var userId = GetUserIdFromJwt();
+        if (userId == Guid.Empty) throw new UnauthorizedAccessException(MessageConstant.User.UserNotFound);
+        var supportRequest = await _supportRequestRepository.GetSupportRequestByIdWithInclude(id);
+        if (supportRequest == null) throw new BadHttpRequestException(MessageConstant.SupportRequest.SupportRequestNotFound);
+        if (role == RoleEnum.Member)
+        {
+            if (supportRequest.Member.UserId != userId) throw new UnauthorizedAccessException(MessageConstant.SupportRequest.CannotAccessToSupportRequest);
+        }
+        var response = _mapper.Map<SupportRequestResponse>(supportRequest);
         return response;
     }
 }

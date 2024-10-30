@@ -10,9 +10,8 @@ public class SupportRequestResponse
     public DateTime CreatedAt { get; set; }
     public DateTime ModifiedAt { get; set; }
     public SupportRequestStatus Status { get; set; }
-    
+    public int NumberOfRequest { get; set; }
     public ICollection<SupportMessageResponse>? SupportMessages { get; set; }
     public LabResponse Lab { get; set; }
-    public ICollection<string>? ImageUrls { get; set; }
     public MemberResponse Member { get; set; }
 }

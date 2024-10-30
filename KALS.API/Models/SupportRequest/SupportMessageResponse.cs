@@ -9,4 +9,5 @@ public class SupportMessageResponse
     public string Content { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime ModifiedAt { get; set; }
+    public ICollection<SupportMessageImageResponse> SupportMessageImages { get; set; }
 }

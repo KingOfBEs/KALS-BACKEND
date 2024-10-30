@@ -22,6 +22,22 @@ public class SupportRequestRepository: GenericRepository<SupportRequest>, ISuppo
         return supportRequests;
     }
 
+    public Task<SupportRequest> GetSupportRequestByIdWithInclude(Guid id)
+    {
+        var supportRequest = SingleOrDefaultAsync(
+            predicate: sr => sr.Id == id,
+            include: sr => sr.Include(sr => sr.Member)
+                .ThenInclude(m => m.User)
+                .Include(sr => sr.Lab)
+                .Include(sr => sr.Staff)
+                .Include(sr => sr.LabMember)
+                .ThenInclude(sr => sr.Lab)
+                .Include(sr => sr.SupportMessages)
+                .ThenInclude(sm => sm.SupportMessageImages)
+        );
+        return supportRequest;
+    }
+
     public async Task<SupportRequest> GetSupportRequestById(Guid id)
     {
         var supportRequest = await SingleOrDefaultAsync(
@@ -58,6 +74,8 @@ public class SupportRequestRepository: GenericRepository<SupportRequest>, ISuppo
             include: sr => sr.Include(sr => sr.Member)
                 .ThenInclude(m => m.User)
                 .Include(sr => sr.Lab)
+                .ThenInclude(l => l.Product)
+                .ThenInclude(p => p.ProductImages)
                 .Include(sr => sr.Staff)
                 .Include(sr => sr.LabMember)
                 .ThenInclude(sr => sr.Lab)
@@ -93,6 +111,8 @@ public class SupportRequestRepository: GenericRepository<SupportRequest>, ISuppo
             include: sr => sr.Include(sr => sr.Member)
                 .ThenInclude(m => m.User)
                 .Include(sr => sr.Lab)
+                .ThenInclude(l => l.Product)
+                .ThenInclude(p => p.ProductImages)
                 .Include(sr => sr.Staff)
                 .Include(sr => sr.LabMember)
                 .ThenInclude(lm => lm.Lab)

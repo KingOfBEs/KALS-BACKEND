@@ -40,7 +40,8 @@ public class MemberRepository: GenericRepository<Member>, IMemberRepository
                 ProvinceCode = m.ProvinceCode,
                 CommuneCode = m.CommuneCode,
                 DistrictCode = m.DistrictCode,
-                LabMembers = m.LabMembers
+                LabMembers = m.LabMembers,
+                Orders = m.Orders 
             },
             page: page,
             size: size,
