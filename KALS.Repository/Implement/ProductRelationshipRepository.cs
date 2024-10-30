@@ -30,4 +30,12 @@ public class ProductRelationshipRepository: GenericRepository<ProductRelationshi
         );
         return productRelationship;
     }
+
+    public Task<ICollection<ProductRelationship>> GetProductRelationsipByParentId(Guid parentId)
+    {
+        var productRelationship = GetListAsync(
+            predicate: x => x.ParentProductId == parentId
+        );
+        return productRelationship;
+    }
 }

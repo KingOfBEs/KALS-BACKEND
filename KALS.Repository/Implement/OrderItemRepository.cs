@@ -27,6 +27,8 @@ public class OrderItemRepository: GenericRepository<OrderItem>, IOrderItemReposi
             predicate: oi => oi.Id == orderItemId,
             include: oi => oi.Include(oi => oi.Product)
                 .ThenInclude(p => p.ProductImages)
+                .Include(oi => oi.Order)
+                .ThenInclude(o => o.Member)
         );
         return orderItem;
     }

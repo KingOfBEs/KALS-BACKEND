@@ -66,6 +66,7 @@ public class ApiEndPointConstant
         public const string MemberEndpoint = ApiEndpoint + "/members";
         public const string MemberById = MemberEndpoint + "/{id}";
         public const string MemberInformation = MemberEndpoint + "/information";
+        public const string MemberWarrantyRequest = MemberEndpoint + "/warranty-requests";
     }
     public class Order
     {

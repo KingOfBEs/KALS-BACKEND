@@ -10,7 +10,13 @@ public class WarrantyRequestMapper: Profile
     {
         CreateMap<WarrantyRequest, WarrantyRequestWithImageResponse>()
             .ForMember(dest => dest.WarrantyRequestImages,
-                opt => opt.MapFrom(src => src.WarrantyRequestImages));
+                opt => opt.MapFrom(src => src.WarrantyRequestImages))
+            .ForMember(dest => dest.Member,
+                opt => opt.MapFrom(src => src.OrderItem.Order.Member))
+            .ForMember(dest => dest.WarrantyCode,
+                opt => opt.MapFrom(src => src.OrderItem.WarrantyCode))
+            .ForMember(dest => dest.WarrantyExpired,
+                opt => opt.MapFrom(src => src.OrderItem.WarrantyExpired));
         CreateMap<CreateWarrantyRequestRequest, WarrantyRequest>();
     }
 }

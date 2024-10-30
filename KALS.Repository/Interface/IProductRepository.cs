@@ -9,6 +9,8 @@ public interface IProductRepository: IGenericRepository<Product>
 {
     Task<Product> GetProductByIdAsync(Guid id);
     
+    Task<Product> GetProductByIdNoIncludeAsync(Guid id);
+    
     Task<IPaginate<Product>> GetProductNotHiddenPagingAsync(int page, int size, IFilter<Product>? filter, string? sortBy,
         bool isAsc);
     Task<IPaginate<Product>> GetProductPagingAsync(int page, int size, IFilter<Product>? filter, string? sortBy, bool isAsc);

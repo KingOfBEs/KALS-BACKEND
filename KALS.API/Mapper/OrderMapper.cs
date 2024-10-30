@@ -9,6 +9,8 @@ public class OrderMapper: Profile
 {
     public OrderMapper()
     {
-        CreateMap<Order, OrderResponse>();
+        CreateMap<Order, OrderResponse>()
+            .ForMember(dest => dest.Member, 
+                opt => opt.MapFrom(src => src.Member));
     }
 }

@@ -1,3 +1,4 @@
+using KALS.API.Models.User;
 using KALS.Domain.Enums;
 
 namespace KALS.API.Models.SupportRequest;
@@ -12,4 +13,5 @@ public class SupportRequestResponse
     public ICollection<SupportMessageResponse>? SupportMessages { get; set; }
     
     public ICollection<string>? ImageUrls { get; set; }
+    public MemberResponse Member { get; set; }
 }

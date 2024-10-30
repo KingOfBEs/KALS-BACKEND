@@ -6,4 +6,6 @@ public interface IProductRelationshipRepository: IGenericRepository<ProductRelat
 {
     Task<(List<Guid> currentChildProducts, List<Guid> newChildProducts, List<Guid> removeChildProducts)> GetNewAndRemoveChildProductIdsAsync(Guid parentId, List<Guid> requestedChildProductIds);
     Task<ProductRelationship> GetChildProductByIdAsync(Guid parentId, Guid childProductId);
+    
+    Task<ICollection<ProductRelationship>> GetProductRelationsipByParentId(Guid parentId);
 }

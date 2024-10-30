@@ -1,10 +1,12 @@
 using AutoMapper;
 using KALS.API.Constant;
+using KALS.API.Models.User;
 using KALS.API.Models.WarrantyRequest;
 using KALS.API.Services.Interface;
 using KALS.API.Utils;
 using KALS.Domain.Entities;
 using KALS.Domain.Enums;
+using KALS.Domain.Filter.FilterModel;
 using KALS.Domain.Paginate;
 using KALS.Repository.Interface;
 using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
@@ -18,31 +20,38 @@ public class WarrantyRequestService: BaseService<WarrantyRequestService>, IWarra
     private readonly IFirebaseService _firebaseService;
     private readonly IMemberRepository _memberRepository;
     private readonly IStaffRepository _staffRepository;
+    private readonly IWarrantyRequestImageRepository _warrantyRequestImageRepository;
     public WarrantyRequestService(ILogger<WarrantyRequestService> logger, 
         IMapper mapper, IHttpContextAccessor httpContextAccessor, 
         IConfiguration configuration, IWarrantyRequestRepository warrantyRequestRepository, IOrderItemRepository orderItemRepository,
-        IFirebaseService firebaseService, IMemberRepository memberRepository, IStaffRepository staffRepository) : base(logger, mapper, httpContextAccessor, configuration)
+        IFirebaseService firebaseService, IMemberRepository memberRepository, IStaffRepository staffRepository, 
+        IWarrantyRequestImageRepository warrantyRequestImageRepository) : base(logger, mapper, httpContextAccessor, configuration)
     {
         _warrantyRequestRepository = warrantyRequestRepository;
         _orderItemRepository = orderItemRepository;
         _firebaseService = firebaseService;
         _memberRepository = memberRepository;
         _staffRepository = staffRepository;
+        _warrantyRequestImageRepository = warrantyRequestImageRepository;
     }
+    
 
-    public async Task<IPaginate<WarrantyRequestWithImageResponse>> GetWarrantyRequestsAsync(int page, int size, Guid? memberId)
+    public async Task<IPaginate<WarrantyRequestWithImageResponse>> GetWarrantyRequestsAsync(int page, int size, WarrantyRequestFilter? filter, string? sortBy, bool isAsc)
     {
         var role = GetRoleFromJwt();
         IPaginate<WarrantyRequestWithImageResponse> response = null;
         switch (role)
         {
             case RoleEnum.Member:
-                var warrantyRequestWithMembers = await _warrantyRequestRepository.GetWarrantyRequestsAsync(page, size, memberId);
+                var userId = GetUserIdFromJwt();
+                var member = await _memberRepository.GetMemberByUserId(userId);
+                if (member == null) throw new BadHttpRequestException(MessageConstant.User.MemberNotFound);
+                var warrantyRequestWithMembers = await _warrantyRequestRepository.GetWarrantyRequestsAsync(page, size, member.Id, null, sortBy, isAsc);
                 response = _mapper.Map<IPaginate<WarrantyRequestWithImageResponse>>(warrantyRequestWithMembers);
                 break;
             case RoleEnum.Manager:
             case RoleEnum.Staff:
-                var warrantyRequests =  await _warrantyRequestRepository.GetWarrantyRequestsAsync(page, size, null);
+                var warrantyRequests =  await _warrantyRequestRepository.GetWarrantyRequestsAsync(page, size, null, filter, sortBy, isAsc);
                 response = _mapper.Map<IPaginate<WarrantyRequestWithImageResponse>>(warrantyRequests);
                 break;
             default:
@@ -61,8 +70,10 @@ public class WarrantyRequestService: BaseService<WarrantyRequestService>, IWarra
         var userId = GetUserIdFromJwt();
         var member = await _memberRepository.GetMemberByUserId(userId);
         if (member == null) throw new BadHttpRequestException(MessageConstant.User.MemberNotFound);
-        
+        if (orderItem.Order.MemberId != member.Id)
+            throw new BadHttpRequestException(MessageConstant.WarrantyRequest.NotAccessedToWarrantyRequest);
         var warrantyRequest = _mapper.Map<WarrantyRequest>(request);
+        warrantyRequest.Id = Guid.NewGuid();
         warrantyRequest.Status = WarrantyRequestStatus.WaitForResponse;
         warrantyRequest.CreatedAt = TimeUtil.GetCurrentSEATime();
         warrantyRequest.ModifiedAt = TimeUtil.GetCurrentSEATime();
@@ -71,17 +82,21 @@ public class WarrantyRequestService: BaseService<WarrantyRequestService>, IWarra
         {
             var imageUrl = await _firebaseService.UploadFileToFirebaseAsync(imageBase64);
             if(imageUrl == null) throw new BadHttpRequestException(MessageConstant.WarrantyRequest.UploadImageFailed);
-            warrantyRequest.WarrantyRequestImages.Add(new WarrantyRequestImage
+            await _warrantyRequestImageRepository.InsertAsync(new WarrantyRequestImage
             {
                 Id = Guid.NewGuid(),
-                ImageUrl = imageUrl
+                ImageUrl = imageUrl,
+                WarrantyRequestId = warrantyRequest.Id
             });
         }
 
         await _warrantyRequestRepository.InsertAsync(warrantyRequest);
         var isSuccess = await _warrantyRequestRepository.SaveChangesAsync();
         WarrantyRequestWithImageResponse response = null;
-        if(isSuccess) response = _mapper.Map<WarrantyRequestWithImageResponse>(warrantyRequest);
+        if(isSuccess)
+        {
+            response = _mapper.Map<WarrantyRequestWithImageResponse>(warrantyRequest);
+        }
         return response;
     }
 
@@ -112,5 +127,30 @@ public class WarrantyRequestService: BaseService<WarrantyRequestService>, IWarra
         WarrantyRequestWithImageResponse response = null;
         if(isSuccess) response = _mapper.Map<WarrantyRequestWithImageResponse>(warrantyRequest);
         return response;
+    }
+
+    public async Task<WarrantyRequestWithImageResponse> GetWarrantyRequestByIdAsync(Guid warrantyRequestId)
+    {
+        if (warrantyRequestId == Guid.Empty)
+            throw new BadHttpRequestException(MessageConstant.WarrantyRequest.WarrantyRequestIdNotNull);
+        var role = GetRoleFromJwt();
+        switch (role)
+        {
+            case RoleEnum.Manager:
+            case RoleEnum.Staff:
+                var warrantyRequest = await _warrantyRequestRepository.GetWarrantyRequestByIdAsync(warrantyRequestId);
+                return _mapper.Map<WarrantyRequestWithImageResponse>(warrantyRequest);
+            case RoleEnum.Member:
+                var userId = GetUserIdFromJwt();
+                var member = await _memberRepository.GetMemberByUserId(userId);
+                var warrantyRequestMember = await _warrantyRequestRepository.GetWarrantyRequestByIdAsync(warrantyRequestId);
+                if (warrantyRequestMember.OrderItem.Order.MemberId != member.Id)
+                {
+                    throw new UnauthorizedAccessException(MessageConstant.WarrantyRequest.NotAccessedToWarrantyRequest);
+                }
+                return _mapper.Map<WarrantyRequestWithImageResponse>(warrantyRequestMember);
+            default:
+                throw new UnauthorizedAccessException(MessageConstant.WarrantyRequest.NotAccessedToWarrantyRequest);
+        }
     }
 }

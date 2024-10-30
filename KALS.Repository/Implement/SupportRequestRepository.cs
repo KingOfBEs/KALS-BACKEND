@@ -56,10 +56,12 @@ public class SupportRequestRepository: GenericRepository<SupportRequest>, ISuppo
             page: page,
             size: size,
             include: sr => sr.Include(sr => sr.Member)
+                .ThenInclude(m => m.User)
                 .Include(sr => sr.Lab)
                 .Include(sr => sr.Staff)
                 .Include(sr => sr.LabMember)
                 .Include(sr => sr.SupportMessages)
+                .ThenInclude(sm => sm.SupportMessageImages)
         );
         return supportRequest;
     }
@@ -86,7 +88,14 @@ public class SupportRequestRepository: GenericRepository<SupportRequest>, ISuppo
             sortBy: sortBy,
             isAsc: isAsc,
             page: page,
-            size: size
+            size: size,
+            include: sr => sr.Include(sr => sr.Member)
+                .ThenInclude(m => m.User)
+                .Include(sr => sr.Lab)
+                .Include(sr => sr.Staff)
+                .Include(sr => sr.LabMember)
+                .Include(sr => sr.SupportMessages)
+                .ThenInclude(sm => sm.SupportMessageImages)
         );
         return supportRequest;
     }

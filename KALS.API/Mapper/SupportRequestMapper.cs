@@ -9,9 +9,12 @@ public class SupportRequestMapper: Profile
     public SupportRequestMapper()
     {
         CreateMap<SupportRequest, SupportRequestResponse>()
-            .ForMember(dest => dest.SupportMessages, 
+            .ForMember(dest => dest.SupportMessages,
                 opt => opt.MapFrom(src => src.SupportMessages))
-            .ForMember(dest => dest.ImageUrls , 
-                opt => opt.MapFrom(src => src.SupportMessages.SelectMany(x => x.SupportMessageImages).Select(x => x.ImageUrl)));
+            .ForMember(dest => dest.ImageUrls,
+                opt => opt.MapFrom(src =>
+                    src.SupportMessages!.SelectMany(x => x.SupportMessageImages).Select(x => x.ImageUrl)))
+            .ForMember(dest => dest.Member,
+                opt => opt.MapFrom(src => src.Member));
     }
 }

@@ -1,4 +1,5 @@
 using KALS.Domain.Entities;
+using KALS.Domain.Filter.FilterModel;
 using KALS.Domain.Paginate;
 using KALS.Repository.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ public class WarrantyRequestRepository: GenericRepository<WarrantyRequest>, IWar
     {
     }
 
-    public async Task<IPaginate<WarrantyRequest>> GetWarrantyRequestsAsync(int page, int size, Guid? memberId)
+    public async Task<IPaginate<WarrantyRequest>> GetWarrantyRequestsAsync(int page, int size, Guid? memberId, WarrantyRequestFilter? filter, string? sortBy, bool isAsc)
     {
         var warrantyRequests = await GetPagingListAsync(
             selector: wr => new WarrantyRequest()
@@ -25,11 +26,19 @@ public class WarrantyRequestRepository: GenericRepository<WarrantyRequest>, IWar
                 ResponseBy = wr.ResponseBy,
                 OrderItemId = wr.OrderItemId,
                 OrderItem = wr.OrderItem,
+                WarrantyRequestImages = wr.WarrantyRequestImages
             },
             predicate: memberId == null ? null : wr => wr.OrderItem.Order.MemberId == memberId,
             page: page,
             size: size,
-            filter: null
+            filter: filter,
+            include: wr => wr.Include(wr => wr.OrderItem)
+                .ThenInclude(wr => wr.Order)
+                .ThenInclude(wr => wr.Member)
+                .ThenInclude(wr => wr.User)
+                .Include(wr => wr.WarrantyRequestImages),
+            sortBy: sortBy,
+            isAsc: isAsc
         );
         return warrantyRequests;
     }
@@ -37,7 +46,12 @@ public class WarrantyRequestRepository: GenericRepository<WarrantyRequest>, IWar
     public async Task<WarrantyRequest> GetWarrantyRequestByIdAsync(Guid warrantyRequestId)
     {
         var warrantyRequest = await SingleOrDefaultAsync(
-            predicate: wr => wr.Id == warrantyRequestId
+            predicate: wr => wr.Id == warrantyRequestId,
+            include: sr => sr.Include(wr => wr.OrderItem)
+                .ThenInclude(wr => wr.Order)
+                .ThenInclude(wr => wr.Member)
+                .ThenInclude(wr => wr.User)
+                .Include(wr => wr.WarrantyRequestImages)
         );
         return warrantyRequest;
     }

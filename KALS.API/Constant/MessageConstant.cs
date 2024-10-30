@@ -47,7 +47,6 @@ public class MessageConstant
         public const string CreateProductFailed = "Tạo sản phẩm không thành công";
         public const string ProductIsNotKit = "Sản phẩm không phải là Kit";
         public const string PriceMustBeSmallerThanExpectedPrice = "Giá bán phải nhỏ hơn giá dự kiến";
-
     }
     public static class Lab
     {
@@ -149,5 +148,6 @@ public class MessageConstant
         public const string WarrantyRequestDenied = "Yêu cầu bảo hành đã bị từ chối";
         public const string WarrantyRequestStatusInvalid = "Trạng thái yêu cầu bảo hành không hợp lệ";
         public const string UpdateWarrantyRequestFail = "Cập nhật yêu cầu bảo hành không thành công";
+        public const string NotAccessedToWarrantyRequest = "Không có quyền truy cập yêu cầu bảo hành";
     }
 }

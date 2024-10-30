@@ -29,7 +29,8 @@ public class OrderRepository: GenericRepository<Order>, IOrderRepository
                 Address = o.Address,
                 MemberId = o.MemberId,
                 PaymentId = o.PaymentId,
-                Code = o.Code
+                Code = o.Code,
+                Member = o.Member,
             },
             predicate: o => o.MemberId == memberId,
             page: page,
@@ -38,6 +39,7 @@ public class OrderRepository: GenericRepository<Order>, IOrderRepository
             sortBy: sortBy,
             isAsc: isAsc,
             include: o => o.Include(o => o.Member)
+                .ThenInclude(m => m.User)
                 .Include(o => o.Payment)
         );
         return orders;
@@ -58,7 +60,8 @@ public class OrderRepository: GenericRepository<Order>, IOrderRepository
                 Address = o.Address,
                 MemberId = o.MemberId,
                 PaymentId = o.PaymentId,
-                Code = o.Code
+                Code = o.Code,
+                Member = o.Member
             },
             page: page,
             size: size,
@@ -66,6 +69,7 @@ public class OrderRepository: GenericRepository<Order>, IOrderRepository
             sortBy: sortBy,
             isAsc: isAsc,
             include: o => o.Include(o => o.Member)
+                .ThenInclude(m => m.User)
                 .Include(o => o.Payment)
         );
         return orders;

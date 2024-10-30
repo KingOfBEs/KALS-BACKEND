@@ -92,15 +92,25 @@ public class OrderService: BaseService<OrderService>, IOrderService
                 foreach (var orderItem in orderItems)
                 {
                     var product = await _productRepository.GetProductByIdAsync(orderItem.ProductId);
+                    orderItem.WarrantyExpired = TimeUtil.GetCurrentSEATime().AddMonths(product.IsKit ? 3 : 1);
+                    _orderItemRepository.UpdateAsync(orderItem);
                     foreach (var lab in product.Labs!)
                     {
                         var existedLabMember = await _labMemberRepository.GetLabMemberByLabIdAndMemberId(lab.Id, order.MemberId);
-                        if (existedLabMember != null) continue;
-                        await _labMemberRepository.InsertAsync(new LabMember()
+                        if (existedLabMember != null)
                         {
-                            MemberId = order.MemberId,
-                            LabId = lab.Id
-                        });
+                            existedLabMember.NumberOfRequest += 3;
+                            _labMemberRepository.UpdateAsync(existedLabMember);
+                        }
+                        else
+                        {
+                            await _labMemberRepository.InsertAsync(new LabMember()
+                            {
+                                MemberId = order.MemberId,
+                                LabId = lab.Id,
+                                NumberOfRequest = 3
+                            });
+                        }
                     }
                 }
                 // _unitOfWork.GetRepository<Order>().UpdateAsync(order);

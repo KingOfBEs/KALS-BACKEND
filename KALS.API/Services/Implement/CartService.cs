@@ -53,9 +53,13 @@ public class CartService: BaseService<CartService>, ICartService
         if (existedProduct != null)
         {
             existedProduct.Quantity += request.Quantity;
+            if (existedProduct.Quantity > product.Quantity)
+                throw new BadHttpRequestException(MessageConstant.Product.ProductOutOfStock);
         }
         else
         {
+            if (request.Quantity > product.Quantity)
+                throw new BadHttpRequestException(MessageConstant.Product.ProductOutOfStock);
             cart.Add(response);
         }
         var updatedCart = JsonConvert.SerializeObject(cart);
@@ -125,9 +129,8 @@ public class CartService: BaseService<CartService>, ICartService
         
         var product = await _productRepository.GetProductByIdAsync(request.ProductId);
         if(product == null) throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
-        
-        // var redis = ConnectionMultiplexer.Connect(_configuration.GetConnectionString("Redis"));
-        // var db = redis.GetDatabase();
+        if (request.Quantity > product.Quantity)
+            throw new BadHttpRequestException(MessageConstant.Product.ProductOutOfStock);
         var key = "Cart:" + userId;
         var cartData = await _redisService.GetStringAsync(key);
         

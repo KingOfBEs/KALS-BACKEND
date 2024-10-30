@@ -10,4 +10,6 @@ public class UpdateProductRequest
     public decimal? Price { get; set; }
     public bool? IsHidden { get; set; }
     public bool? IsKit { get; set; }
+
+    public ICollection<UpdateChildProductForKitRequest>? ChildProducts { get; set; }
 }

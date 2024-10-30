@@ -28,7 +28,20 @@ public class ProductRepository: GenericRepository<Product>, IProductRepository
         return product;
     }
 
-    
+    public Task<Product> GetProductByIdNoIncludeAsync(Guid id)
+    {
+        var product = SingleOrDefaultAsync(
+            predicate:x => x.Id == id
+            // include: p => p.Include(p => p.ChildProducts)
+            //     .ThenInclude(cp => cp.ChildProduct)
+            //     .Include(p => p.ProductImages)
+            //     .Include(p => p.Labs)
+            //     .Include(p => p.ProductCategories)
+            //     .ThenInclude(pc => pc.Category)
+        );
+        return product;
+    }
+
 
     public async Task<IPaginate<Product>> GetProductNotHiddenPagingAsync(int page, int size, IFilter<Product>? filter,
         string? sortBy, bool isAsc)
@@ -93,7 +106,13 @@ public class ProductRepository: GenericRepository<Product>, IProductRepository
     public async Task<ICollection<Product>> GetListProductsByParentIdAsync(Guid parentId)
     {
         var products = await GetListAsync(
-            predicate: p => p.ChildProducts.Any(cp => cp.ParentProductId == parentId)
+            predicate: p => p.ChildProducts.Any(cp => cp.ParentProductId == parentId),
+            include: p => p.Include(p => p.ParentProducts)
+                .ThenInclude(cp => cp.ParentProduct)
+                .Include(p => p.ProductImages)
+                .Include(p => p.Labs)
+                .Include(p => p.ProductCategories)
+                .ThenInclude(pc => pc.Category)
         );
         return products;
     }
