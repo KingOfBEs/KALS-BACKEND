@@ -144,11 +144,13 @@ public class SupportRequestService: BaseService<SupportRequestService>, ISupport
             SupportRequestId = supportRequest.Id,
             SupportRequest = supportRequest
         };
-        
+        var labMember = await _labMemberRepository.GetLabMemberByLabIdAndMemberId(supportRequest.LabId, supportRequest.MemberId);
+        labMember.NumberOfRequest -= 1;
         using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
         {
             try
             {
+                _labMemberRepository.UpdateAsync(labMember);
                 if (request.ImageFiles.Any())
                 {
                     var images = await _firebaseService.UploadFilesToFirebaseAsync(request.ImageFiles);
