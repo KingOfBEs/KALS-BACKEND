@@ -1,6 +1,7 @@
 using System.Transactions;
 using AutoMapper;
 using KALS.API.Constant;
+using KALS.API.Models.Cart;
 using KALS.API.Models.Category;
 using KALS.API.Models.Product;
 using KALS.API.Services.Interface;
@@ -12,6 +13,7 @@ using KALS.Domain.Filter.FilterModel;
 using KALS.Domain.Paginate;
 using KALS.Repository.Interface;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace KALS.API.Services.Implement;
 
@@ -23,9 +25,11 @@ public class ProductService: BaseService<ProductService>, IProductService
     private readonly IProductCategoryRepository _productCategoryRepository;
     private readonly IProductImageRepository _productImageRepository;
     private readonly IFirebaseService _firebaseService;
+    private readonly IRedisService _redisService;
     public ProductService(ILogger<ProductService> logger, IMapper mapper, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, 
         IProductRepository productRepository, ICategoryRepository categoryRepository, IProductRelationshipRepository productRelationshipRepository,
-        IProductCategoryRepository productCategoryRepository, IProductImageRepository productImageRepository, IFirebaseService firebaseService) : base(logger, mapper, httpContextAccessor, configuration)
+        IProductCategoryRepository productCategoryRepository, IProductImageRepository productImageRepository, IFirebaseService firebaseService,
+        IRedisService redisService) : base(logger, mapper, httpContextAccessor, configuration)
     {
         _productRepository = productRepository;
         _categoryRepository = categoryRepository;
@@ -33,6 +37,7 @@ public class ProductService: BaseService<ProductService>, IProductService
         _productCategoryRepository = productCategoryRepository;
         _productImageRepository = productImageRepository;
         _firebaseService = firebaseService;
+        _redisService = redisService;
     }
 
     public async Task<IPaginate<GetProductWithCatogoriesResponse>> GetAllProductPagingAsync(int page, int size, ProductFilter? filter, string? sortBy, bool isAsc)
@@ -57,7 +62,11 @@ public class ProductService: BaseService<ProductService>, IProductService
     public async Task<GetProductDetailResponse> GetProductByIdAsync(Guid id)
     {
         if(id == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Product.ProductIdNotNull);
+        var role = GetRoleFromJwt();
+        
         var p = await _productRepository.GetProductByIdAsync(id);
+        if(p.IsHidden && role != RoleEnum.Manager && role != RoleEnum.Staff)
+            throw new BadHttpRequestException(MessageConstant.Product.ProductIsHidden);
         var productResponse = new GetProductDetailResponse()
         {
             
@@ -196,7 +205,7 @@ public class ProductService: BaseService<ProductService>, IProductService
                 bool isSuccess = await _productRepository.SaveChangesAsync();
                 if (!isSuccess) return null;
                 transaction.Complete();
-                return _mapper.Map<GetProductResponse>(product);;
+                return _mapper.Map<GetProductResponse>(product);
             }
             catch (TransactionException ex)
             {
@@ -313,7 +322,43 @@ public class ProductService: BaseService<ProductService>, IProductService
                 bool isSuccess = await _productRelationshipRepository.SaveChangesAsync();
                 transactionScope.Complete();
                 GetProductResponse productResponse = null;
-                if (isSuccess) productResponse = _mapper.Map<GetProductResponse>(product);
+                if (isSuccess)
+                {
+                    productResponse = _mapper.Map<GetProductResponse>(product);
+                    var cartKeys = await _redisService.GetListAsync("AllCartKeys");
+                    if (cartKeys.Any())
+                    {
+                        foreach (var cartKey in cartKeys)
+                        {
+                            bool isUpdated = false;
+                            var cartJson = await _redisService.GetStringAsync(cartKey);
+                            var cart = JsonConvert.DeserializeObject<List<CartModelResponse>>(cartJson);
+                            foreach (var cartItem in cart)
+                            {
+                                if (cartItem.ProductId == product.Id)
+                                {
+                                    if (cartItem.Quantity > product.Quantity)
+                                    {
+                                        await _redisService.RemoveKeyAsync(cartKey);
+                                        await _redisService.RemoveFromListAsync("AllCartKeys", cartKey);
+                                        break;
+                                    }
+                                    cartItem.Name = product.Name;
+                                    cartItem.Description = product.Description;
+                                    cartItem.Price = product.Price;
+                                    cartItem.MainImage = product.ProductImages?.Where(pi => pi.IsMain == true).FirstOrDefault()?.ImageUrl;
+                                    cartItem.ProductQuantity = product.Quantity;
+                                    isUpdated = true;
+                                }
+                            }
+
+                            if (isUpdated)
+                            {
+                                await _redisService.SetStringAsync(cartKey, JsonConvert.SerializeObject(cart));
+                            }
+                        }
+                    }
+                }
                 return productResponse;
             }
             catch (Exception e)
@@ -384,10 +429,12 @@ public class ProductService: BaseService<ProductService>, IProductService
                 }
                 
                 bool isSuccess = await _productRelationshipRepository.SaveChangesAsync();
-                
                 transaction.Complete();
                 GetProductResponse productResponse = null;
-                if (isSuccess) productResponse = _mapper.Map<GetProductResponse>(parentProduct);
+                if (isSuccess)
+                {
+                    productResponse = _mapper.Map<GetProductResponse>(parentProduct);
+                }
                 return productResponse;
             }
             catch (TransactionException ex)

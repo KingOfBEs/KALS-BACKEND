@@ -29,4 +29,19 @@ public class RedisService: IRedisService
     {
         return await _db.KeyDeleteAsync(key);
     }
+
+    public async Task PushToListAsync(string key, string value)
+    {
+         await _db.ListRightPushAsync(key, value);
+    }
+
+    public async Task RemoveFromListAsync(string key, string value)
+    {
+         await _db.ListRemoveAsync(key, value);
+    }
+
+    public Task<List<string>> GetListAsync(string key)
+    {
+        return _db.ListRangeAsync(key).ContinueWith(t => t.Result.Select(x => x.ToString()).ToList());
+    }
 }

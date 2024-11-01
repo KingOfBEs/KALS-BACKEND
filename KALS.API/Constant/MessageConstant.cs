@@ -47,6 +47,7 @@ public class MessageConstant
         public const string CreateProductFailed = "Tạo sản phẩm không thành công";
         public const string ProductIsNotKit = "Sản phẩm không phải là Kit";
         public const string PriceMustBeSmallerThanExpectedPrice = "Giá bán phải nhỏ hơn giá dự kiến";
+        public const string ProductIsHidden = "Sản phẩm không tồn tại";
     }
     public static class Lab
     {

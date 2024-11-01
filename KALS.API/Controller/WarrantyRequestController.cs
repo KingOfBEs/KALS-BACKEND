@@ -47,7 +47,7 @@ public class WarrantyRequestController: BaseController<WarrantyRequestController
     [HttpPatch(ApiEndPointConstant.WarrantyRequest.WarrantyRequestById)]
     [ProducesResponseType(typeof(WarrantyRequestWithImageResponse), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
-    [CustomAuthorize(RoleEnum.Staff, RoleEnum.Manager)]
+    [CustomAuthorize(RoleEnum.Staff)]
     public async Task<IActionResult> UpdateWarrantyRequest(Guid id, [FromBody] UpdateWarrantyRequestRequest request)
     {
         var response = await _warrantyRequestService.UpdateWarrantyRequestAsync(id, request);

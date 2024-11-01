@@ -4,6 +4,7 @@ using KALS.API.Constant;
 using KALS.API.Extensions;
 using KALS.API.Middleware;
 using KALS.API.Models.User;
+using KALS.API.Services.Implement;
 using KALS.API.Validator;
 using StackExchange.Redis;
 
@@ -18,6 +19,11 @@ try
     {
         options.AddPolicy(CorConstant.PolicyName,
             policy => { policy.WithOrigins("*").AllowAnyHeader().AllowAnyMethod(); });
+    });
+    builder.Services.AddHostedService<CancelOrderService>();
+    builder.Services.Configure<HostOptions>(hostOptions =>
+    {
+        hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
     });
     builder.Services.AddDatabase();
     builder.Services.AddRedis();

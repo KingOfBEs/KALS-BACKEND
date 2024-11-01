@@ -53,9 +53,7 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
         if (member == null) throw new UnauthorizedAccessException(MessageConstant.User.UserNotFound);
         if( member.Commune == null || member.Province == null || member.District == null || member.Address == null) 
             throw new BadHttpRequestException(MessageConstant.User.MemberAddressNotFound);
-        var redis = ConnectionMultiplexer.Connect(_configuration.GetConnectionString("Redis"));
-        // var db = redis.GetDatabase();
-        // var cartData = await db.StringGetAsync(key);
+        
         var key = "Cart:" + userId;
         var cartData = await _redisService.GetStringAsync(key);
 
@@ -80,9 +78,7 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
         
         foreach (var cartModel in cart)
         {
-            // var product = await _unitOfWork.GetRepository<Product>().SingleOrDefaultAsync(
-            //     predicate: p => p.Id == cartModel.ProductId
-            // );
+            
             var product = await _productRepository.GetProductByIdAsync(cartModel.ProductId);
             if (product == null) throw new BadHttpRequestException(MessageConstant.Product.ProductNotFound);
             if (product.Quantity < cartModel.Quantity) throw new BadHttpRequestException(MessageConstant.Product.ProductOutOfStock);
@@ -237,5 +233,32 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
                 return null;
             }
         }
+    }
+
+    public async Task<bool> UpdateExpiredPayment()
+    {
+        
+        var paymentExpires = await _paymentRepository.GetPaymentExpiredList();
+        var hasExpiredPayments = false;
+        if (paymentExpires.Any())
+        {
+            foreach (var paymentExpire in paymentExpires)
+            {
+                
+                paymentExpire.Status = PaymentStatus.Fail;
+                paymentExpire.ModifiedAt = TimeUtil.GetCurrentSEATime();
+                paymentExpire.Order.Status = OrderStatus.Cancelled;
+                paymentExpire.Order.ModifiedAt = TimeUtil.GetCurrentSEATime();
+                _paymentRepository.UpdateAsync(paymentExpire);
+                hasExpiredPayments = true;
+                Console.Write("Exist payment has expired");
+            }
+        }
+        if (hasExpiredPayments)
+        {
+            var isSuccess = await _paymentRepository.SaveChangesAsync();
+            return isSuccess;
+        }
+        return false;
     }
 }

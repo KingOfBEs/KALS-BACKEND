@@ -34,9 +34,7 @@ public class CartService: BaseService<CartService>, ICartService
         response.Quantity = request.Quantity;
         response.ProductId = product.Id;
         response.MainImage = product.ProductImages?.Where(pi => pi.IsMain == true).FirstOrDefault()?.ImageUrl;
-        
-        // var redis = ConnectionMultiplexer.Connect(_configuration.GetConnectionString("Redis"));
-        // var db = redis.GetDatabase();
+        response.ProductQuantity = product.Quantity;
         var key = "Cart:" + userId;
         var cartData =  await _redisService.GetStringAsync(key);
         List<CartModelResponse> cart = new();
@@ -44,6 +42,7 @@ public class CartService: BaseService<CartService>, ICartService
         if (string.IsNullOrEmpty(cartData))
         {
             cart = new List<CartModelResponse>();
+            await _redisService.PushToListAsync("AllCartKeys", key);
         }
         else
         {
@@ -65,6 +64,7 @@ public class CartService: BaseService<CartService>, ICartService
         var updatedCart = JsonConvert.SerializeObject(cart);
         List<CartModelResponse> result = null;
         var isSuccess = await _redisService.SetStringAsync(key, updatedCart);
+        
         if(isSuccess) result = cart;
         return result;
     }
@@ -109,6 +109,7 @@ public class CartService: BaseService<CartService>, ICartService
         if (!cart.Any())
         {
             await _redisService.RemoveKeyAsync(key);
+            await _redisService.RemoveFromListAsync("AllCartKeys", key);
         }
         else
         {
@@ -167,6 +168,7 @@ public class CartService: BaseService<CartService>, ICartService
         if (!cart.Any())
         {
             await _redisService.RemoveKeyAsync(key);
+            await _redisService.RemoveFromListAsync("AllCartKeys", key);
         }
         return cart;
     }
