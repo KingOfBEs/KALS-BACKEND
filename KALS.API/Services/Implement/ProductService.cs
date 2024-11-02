@@ -337,7 +337,8 @@ public class ProductService: BaseService<ProductService>, IProductService
                             {
                                 if (cartItem.ProductId == product.Id)
                                 {
-                                    if (cartItem.Quantity > product.Quantity)
+                                    
+                                    if (cartItem.Quantity > product.Quantity || product.IsHidden)
                                     {
                                         await _redisService.RemoveKeyAsync(cartKey);
                                         await _redisService.RemoveFromListAsync("AllCartKeys", cartKey);
