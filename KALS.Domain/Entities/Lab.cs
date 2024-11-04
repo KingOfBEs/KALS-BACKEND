@@ -10,6 +10,8 @@ public class Lab: BaseEntity
     public string Name { get; set; }
     [MaxLength(500)]
     public string Url { get; set; }
+    [MaxLength(1000)]
+    public string VideoUrl { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime ModifiedAt { get; set; }
     

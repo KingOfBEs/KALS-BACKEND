@@ -51,10 +51,10 @@ public class OrderController: BaseController<OrderController>
         var result = await _orderService.GetOrderList(page, size, filter, sortBy, isAsc);
         return Ok(result);
     }
-    [HttpPatch(ApiEndPointConstant.Order.UpdateOrderStatus)]
+    [HttpPatch(ApiEndPointConstant.Order.UpdateSupportOrderStatusSuccess)]
     [ProducesResponseType(typeof(OrderResponse), statusCode: StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
-    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff, RoleEnum.Member)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
     public async Task<IActionResult> UpdateOrderStatusCompleted(Guid id)
     {
         var result = await _orderService.UpdateOrderStatusCompleted(id);
@@ -64,6 +64,36 @@ public class OrderController: BaseController<OrderController>
             return Problem($"{MessageConstant.Order.UpdateOrderStatusFail}: {id}");
         }
         _logger.LogInformation($"Update order status completed successful with {id}");
+        return Ok(result);
+    }
+    [HttpPatch(ApiEndPointConstant.Order.UpdateSupportOrderStatusRefuse)]
+    [ProducesResponseType(typeof(OrderResponse), statusCode: StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
+    public async Task<IActionResult> UpdateOrderStatusRefuse(Guid id)
+    {
+        var result = await _orderService.UpdateOrderStatusCancelled(id);
+        if (result == null)
+        {
+            _logger.LogError($"Update order status refused failed with {id}");
+            return Problem($"{MessageConstant.Order.UpdateOrderStatusFail}: {id}");
+        }
+        _logger.LogInformation($"Update order status refused successful with {id}");
+        return Ok(result);
+    }
+    [HttpPatch(ApiEndPointConstant.Order.UpdateSupportOrderStatusShipping)]
+    [ProducesResponseType(typeof(OrderResponse), statusCode: StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), statusCode: StatusCodes.Status500InternalServerError)]
+    [CustomAuthorize(RoleEnum.Manager, RoleEnum.Staff)]
+    public async Task<IActionResult> UpdateOrderStatusShipping(Guid id)
+    {
+        var result = await _orderService.UpdateOrderStatusShipping(id);
+        if (result == null)
+        {
+            _logger.LogError($"Update order status shipping failed with {id}");
+            return Problem($"{MessageConstant.Order.UpdateOrderStatusFail}: {id}");
+        }
+        _logger.LogInformation($"Update order status shipping successful with {id}");
         return Ok(result);
     }
     [HttpGet(ApiEndPointConstant.Order.OrderItems)]

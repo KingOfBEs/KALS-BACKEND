@@ -185,6 +185,11 @@ public class LabService: BaseService<LabService>, ILabService
         var lab = _mapper.Map<Lab>(request);
         lab.Id = Guid.NewGuid();
         lab.Url = googleDriveResponse.Url;
+        if (!request.VideoUrl.StartsWith("https://www.youtube.com/"))
+        {
+            throw new BadHttpRequestException(MessageConstant.Lab.VideoYoutubeUrlInvalid);
+        }
+        lab.VideoUrl = request.VideoUrl;
         lab.CreatedAt = TimeUtil.GetCurrentSEATime();
         lab.ModifiedAt = TimeUtil.GetCurrentSEATime();
         lab.CreatedBy = user.Id;
@@ -211,6 +216,11 @@ public class LabService: BaseService<LabService>, ILabService
             lab.Url = googleDriveResponse.Url;
         }
         lab.Name = !string.IsNullOrEmpty(request.Name) ? request.Name : lab.Name;
+        if (!string.IsNullOrEmpty(request.VideoUrl) && !request.VideoUrl.StartsWith("https://www.youtube.com/"))
+        {
+            throw new BadHttpRequestException(MessageConstant.Lab.VideoYoutubeUrlInvalid);
+        }
+        lab.VideoUrl = !string.IsNullOrEmpty(request.VideoUrl) ? request.VideoUrl : lab.VideoUrl;
         if (request.ProductId != null)
         {
             var product = await _productRepository.GetProductByIdAsync(request.ProductId.Value);

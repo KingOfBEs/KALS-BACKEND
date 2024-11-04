@@ -13,4 +13,7 @@ public interface IOrderService
     
     Task<ICollection<OrderItemResponse>> GetOrderItemsByOrderId(Guid orderId);
     
+    Task<OrderResponse> UpdateOrderStatusShipping(Guid orderId);
+    
+    Task<OrderResponse> UpdateOrderStatusCancelled(Guid orderId);
 }

@@ -46,7 +46,7 @@ public class WarrantyRequestService: BaseService<WarrantyRequestService>, IWarra
                 var userId = GetUserIdFromJwt();
                 var member = await _memberRepository.GetMemberByUserId(userId);
                 if (member == null) throw new BadHttpRequestException(MessageConstant.User.MemberNotFound);
-                var warrantyRequestWithMembers = await _warrantyRequestRepository.GetWarrantyRequestsAsync(page, size, member.Id, null, sortBy, isAsc);
+                var warrantyRequestWithMembers = await _warrantyRequestRepository.GetWarrantyRequestsAsync(page, size, member.Id, filter, sortBy, isAsc);
                 response = _mapper.Map<IPaginate<WarrantyRequestWithImageResponse>>(warrantyRequestWithMembers);
                 break;
             case RoleEnum.Manager:
@@ -57,7 +57,6 @@ public class WarrantyRequestService: BaseService<WarrantyRequestService>, IWarra
             default:
                 throw new UnauthorizedAccessException(MessageConstant.User.RoleNotFound);
         }
-
         return response;
     }
 

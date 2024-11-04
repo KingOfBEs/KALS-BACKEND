@@ -191,7 +191,7 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
                         payment.ModifiedAt = TimeUtil.GetCurrentSEATime();
                         payment.PaymentDateTime =
                             DateTime.Parse(paymentLinkInformation.transactions[0].transactionDateTime);
-                        payment.Order.Status = OrderStatus.Processing;
+                        payment.Order.Status = OrderStatus.Prepare;
                         payment.Order.ModifiedAt = TimeUtil.GetCurrentSEATime();
                         _paymentRepository.UpdateAsync(payment);
 

@@ -57,6 +57,7 @@ public class MessageConstant
         public const string CreateLabFail = "Tạo lab không thành công";
         public const string LabNotFound = "Lab không tồn tại";
         public const string UpdateLabFail = "Cập nhật lab không thành công";
+        public const string VideoYoutubeUrlInvalid = "Link video youtube không hợp lệ";
     }
 
     public static class Category
@@ -104,6 +105,9 @@ public class MessageConstant
         public const string FailToCreatePaymentLink = "Tạo link thanh toán không thành công";
         public const string PayOsStatusNotTrue = "Trạng thái thanh toán của PayOs không hợp lệ";
         public const string CheckOutFail = "Thanh toán không thành công";
+        public const string YourOrderIsRefuseReceive = "Đơn hàng của bạn đã từ chối nhận";
+        public const string YourOrderIsStillPreparing = "Đơn hàng của bạn đang chuẩn bị";
+        public const string YourOrderIsShipping = "Đơn hàng của bạn đang giao hàng";
     }
 
     public static class OrderItem

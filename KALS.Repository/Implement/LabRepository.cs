@@ -45,6 +45,7 @@ public class LabRepository: GenericRepository<Lab>, ILabRepository
                 CreatedBy = l.CreatedBy,
                 ModifiedBy = l.ModifiedBy,
                 Url = l.Url,
+                VideoUrl = l.Url,
                 LabMembers = l.LabMembers,
                 ProductId = l.ProductId,
                 Product = l.Product,
@@ -75,6 +76,7 @@ public class LabRepository: GenericRepository<Lab>, ILabRepository
                 CreatedBy = l.CreatedBy,
                 ModifiedBy = l.ModifiedBy,
                 Url = l.Url,
+                VideoUrl = l.VideoUrl,
                 Product = l.Product
             },
             predicate: l => (searchName.IsNullOrEmpty() || l.Name.Contains(searchName!)),

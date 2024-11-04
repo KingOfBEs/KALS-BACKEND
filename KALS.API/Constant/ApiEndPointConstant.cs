@@ -73,6 +73,9 @@ public class ApiEndPointConstant
         public const string OrderEndpoint = ApiEndpoint + "/orders";
         public const string OrderById = OrderEndpoint + "/{id}";
         public const string UpdateOrderStatus = OrderById + "/status";
+        public const string UpdateSupportOrderStatusSuccess = UpdateOrderStatus + "/success";
+        public const string UpdateSupportOrderStatusRefuse = UpdateOrderStatus + "/refuse";
+        public const string UpdateSupportOrderStatusShipping = UpdateOrderStatus + "/shipping";
         public const string OrderItems = OrderById + "/order-items";
     }
 

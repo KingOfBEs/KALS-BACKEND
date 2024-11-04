@@ -75,8 +75,13 @@ public class OrderService: BaseService<OrderService>, IOrderService
                 throw new BadHttpRequestException(MessageConstant.Payment.YourOrderIsCancelled);
             case OrderStatus.Completed:
                 throw new BadHttpRequestException(MessageConstant.Payment.YourOrderIsCompleted);
-            case OrderStatus.Processing:
+            case OrderStatus.RefuseReceive:
+                throw new BadHttpRequestException(MessageConstant.Payment.YourOrderIsRefuseReceive);
+            case OrderStatus.Prepare:
+                throw new BadHttpRequestException(MessageConstant.Payment.YourOrderIsStillPreparing);
+            case OrderStatus.Shipping:
                 order.Status = order.Status = OrderStatus.Completed;
+                order.ModifiedAt = TimeUtil.GetCurrentSEATime();
                 break;
             default:
                 throw new BadHttpRequestException(MessageConstant.Order.OrderStatusNotFound);
@@ -137,5 +142,69 @@ public class OrderService: BaseService<OrderService>, IOrderService
         var orderItems = await _orderItemRepository.GetOrderItemByOrderIdAsync(orderId);
         var response = _mapper.Map<ICollection<OrderItemResponse>>(orderItems);
         return response;
-    } 
+    }
+
+    public async Task<OrderResponse> UpdateOrderStatusShipping(Guid orderId)
+    {
+        if(orderId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Order.OrderIdNotNull);
+        var order = await _orderRepository.GetOrderByIdAsync(orderId);
+        if (order == null) throw new BadHttpRequestException(MessageConstant.Order.OrderNotFound);
+        switch (order.Status)
+        {
+            case OrderStatus.Cancelled:
+                throw new BadHttpRequestException(MessageConstant.Payment.YourOrderIsCancelled);
+            case OrderStatus.Completed:
+                throw new BadHttpRequestException(MessageConstant.Payment.YourOrderIsCompleted);
+            case OrderStatus.RefuseReceive:
+                throw new BadHttpRequestException(MessageConstant.Payment.YourOrderIsRefuseReceive);
+            case OrderStatus.Pending:
+                throw new BadHttpRequestException(MessageConstant.Payment.YourOrderIsNotPaid);
+            case OrderStatus.Shipping:
+                throw new BadHttpRequestException(MessageConstant.Payment.YourOrderIsShipping);
+            case OrderStatus.Prepare:
+                order.Status = OrderStatus.Shipping;
+                order.ModifiedAt = TimeUtil.GetCurrentSEATime();
+                _orderRepository.UpdateAsync(order);
+                break;
+            default:
+                throw new BadHttpRequestException(MessageConstant.Order.OrderStatusNotFound);
+        }
+        var isSuccess = await _orderRepository.SaveChangesAsync();
+        OrderResponse orderResponse = null;
+        if(isSuccess) orderResponse = _mapper.Map<OrderResponse>(order);
+        return orderResponse;
+    }
+
+    public async Task<OrderResponse> UpdateOrderStatusCancelled(Guid orderId)
+    {
+        if (orderId == Guid.Empty) throw new BadHttpRequestException(MessageConstant.Order.OrderIdNotNull);
+        var order = await _orderRepository.GetOrderByIdAsync(orderId);
+        if (order == null) throw new BadHttpRequestException(MessageConstant.Order.OrderNotFound);
+
+        switch (order.Status)
+        {
+            case OrderStatus.Pending:
+                throw new BadHttpRequestException(MessageConstant.Payment.YourOrderIsNotPaid);
+            case OrderStatus.Cancelled:
+                throw new BadHttpRequestException(MessageConstant.Payment.YourOrderIsCancelled);
+            case OrderStatus.Completed:
+                throw new BadHttpRequestException(MessageConstant.Payment.YourOrderIsCompleted);
+            case OrderStatus.RefuseReceive:
+                throw new BadHttpRequestException(MessageConstant.Payment.YourOrderIsRefuseReceive);
+            case OrderStatus.Prepare:
+                throw new BadHttpRequestException(MessageConstant.Payment.YourOrderIsStillPreparing);
+            case OrderStatus.Shipping:
+                order.Status = order.Status = OrderStatus.RefuseReceive;
+                order.ModifiedAt = TimeUtil.GetCurrentSEATime();
+                break;
+            default:
+                throw new BadHttpRequestException(MessageConstant.Order.OrderStatusNotFound);
+        }
+        
+        _orderRepository.UpdateAsync(order);
+        var isSuccess = await _orderRepository.SaveChangesAsync();
+        OrderResponse orderResponse = null;
+        if(isSuccess) orderResponse = _mapper.Map<OrderResponse>(order);
+        return orderResponse;
+    }
 }
