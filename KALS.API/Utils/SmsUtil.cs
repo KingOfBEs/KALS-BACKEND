@@ -12,7 +12,7 @@ public class SmsUtil
         
         int type = 5;
         String sender = configuration["SMS:device_id"];
-        NetworkCredential myCreds = new NetworkCredential(configuration["SMS:access_token"], "Khoathase173070@@");
+        NetworkCredential myCreds = new NetworkCredential(configuration["SMS:access_token"], configuration["SMS:password"]);
         WebClient client = new WebClient();
         client.Credentials = myCreds;
         client.Headers[HttpRequestHeader.ContentType] = "application/json";

@@ -30,4 +30,15 @@ public class PaymentRepository: GenericRepository<Payment>, IPaymentRepository
             );
         return paymentExpires;
     }
+
+    public async Task<ICollection<Payment>> GetSuccessPaymentByDate(DateTime? startDate, DateTime? endDate)
+    {
+        var payments = await GetListAsync(
+            predicate: p => p.Status == PaymentStatus.Paid 
+                            && (startDate == null || p.Order.ModifiedAt >= startDate) && (endDate == null || p.Order.ModifiedAt <= endDate)
+                            && p.Order.Status == OrderStatus.Completed,
+            include: p => p.Include(p => p.Order)
+        );
+        return payments;
+    }
 }

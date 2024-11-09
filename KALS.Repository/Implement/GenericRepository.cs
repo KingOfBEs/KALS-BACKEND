@@ -77,21 +77,7 @@ public class GenericRepository<T>: IGenericRepository<T>, IAsyncDisposable where
         return await query.AsNoTracking().Select(selector).ToPaginateAsync(page, size, 1);
       
     }
-    private IQueryable<T> PerformManualJoin(IQueryable<T> query)
-    {
-        var parameter = Expression.Parameter(typeof(T), "x");
-        var property = typeof(T).GetProperty("UserId", BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-        if (property == null)
-        {
-            throw new ArgumentException($"Property 'UserId' not found on type {typeof(T).Name}");
-        }
-        var propertyAccess = Expression.Property(parameter, property);
-        var lambda = Expression.Lambda(propertyAccess, parameter);
-        var resultExpression = Expression.Call(typeof(Queryable), "Join", 
-            new Type[] {typeof(T), typeof(T), typeof(Guid), typeof(T)},
-            query.Expression, Expression.Quote(lambda), query.Expression, Expression.Quote(lambda), Expression.Quote(lambda));
-        return query.Provider.CreateQuery<T>(resultExpression);
-    }
+    
     private IQueryable<T> ApplySort(IQueryable<T> query, string sortBy, bool isAsc)
     {
         var parameter = Expression.Parameter(typeof(T), "x");

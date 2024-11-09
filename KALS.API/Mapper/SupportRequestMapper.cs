@@ -16,6 +16,6 @@ public class SupportRequestMapper: Profile
             .ForMember(dest => dest.Member,
                 opt => opt.MapFrom(src => src.Member))
             .ForMember(dest => dest.Lab,
-                opt => opt.MapFrom(src => src.LabMember.Lab));
+                opt => opt.MapFrom(src => src.Lab));
     }
 }

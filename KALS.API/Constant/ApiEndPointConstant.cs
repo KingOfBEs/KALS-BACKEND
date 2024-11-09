@@ -98,4 +98,12 @@ public class ApiEndPointConstant
         public const string WarrantyRequestById = WarrantyRequestEndPoint + "/{id}";
         public const string WarrantyRequestImage = WarrantyRequestById + "/images";
     }
+
+    public class Report
+    {
+        public const string ReportEndPoint = ApiEndpoint + "/reports";
+        public const string DayReport = ReportEndPoint + "/day";
+        public const string WeekReport = ReportEndPoint + "/week";
+       
+    }
 }

@@ -117,6 +117,12 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
         {
             try
             {
+                foreach (var cartModel in cart)
+                {
+                    var productCarts = await _productRepository.GetProductByIdAsync(cartModel.ProductId);
+                    productCarts.Quantity -= cartModel.Quantity;
+                    _productRepository.UpdateAsync(productCarts);
+                }
                 await _orderRepository.InsertAsync(order);
                 await _paymentRepository.InsertAsync(payment);
                 
@@ -195,13 +201,12 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
                         payment.Order.ModifiedAt = TimeUtil.GetCurrentSEATime();
                         _paymentRepository.UpdateAsync(payment);
 
-                        var orderItems = await _orderItemRepository.GetOrderItemByOrderIdAsync(payment.Order.Id);
-                        foreach (var orderItem in orderItems)
-                        {
-                            orderItem.Product.Quantity -= orderItem.Quantity;
-                        }
-
-                        _orderItemRepository.UpdateRangeAsync(orderItems);
+                        // var orderItems = await _orderItemRepository.GetOrderItemByOrderIdAsync(payment.Order.Id);
+                        // foreach (var orderItem in orderItems)
+                        // {
+                        //     orderItem.Product.Quantity -= orderItem.Quantity;
+                        // }
+                        // _orderItemRepository.UpdateRangeAsync(orderItems);
                         break;
                     case PayOsStatus.EXPIRED:
                     case PayOsStatus.CANCELLED:
@@ -211,6 +216,12 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
                         payment.Order.ModifiedAt = TimeUtil.GetCurrentSEATime();
                         // _unitOfWork.GetRepository<Payment>().UpdateAsync(payment);
                         _paymentRepository.UpdateAsync(payment);
+                        var orderItems = await _orderItemRepository.GetOrderItemByOrderIdAsync(payment.Order.Id);
+                        foreach (var orderItem in orderItems)
+                        {
+                            orderItem.Product.Quantity += orderItem.Quantity;
+                        }
+                        _orderItemRepository.UpdateRangeAsync(orderItems);
                         break;
                     default:
                         throw new BadHttpRequestException(MessageConstant.Payment.PayOsStatusNotTrue);
@@ -250,8 +261,13 @@ public class PaymentService: BaseService<PaymentService>, IPaymentService
                 paymentExpire.Order.Status = OrderStatus.Cancelled;
                 paymentExpire.Order.ModifiedAt = TimeUtil.GetCurrentSEATime();
                 _paymentRepository.UpdateAsync(paymentExpire);
+                var orderItems = await _orderItemRepository.GetOrderItemByOrderIdAsync(paymentExpire.Order.Id);
+                foreach (var orderItem in orderItems)
+                {
+                    orderItem.Product.Quantity += orderItem.Quantity;
+                }
+                _orderItemRepository.UpdateRangeAsync(orderItems);
                 hasExpiredPayments = true;
-                Console.Write("Exist payment has expired");
             }
         }
         if (hasExpiredPayments)

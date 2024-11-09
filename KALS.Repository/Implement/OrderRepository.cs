@@ -79,4 +79,24 @@ public class OrderRepository: GenericRepository<Order>, IOrderRepository
     {
         return await SingleOrDefaultAsync(predicate: o => o.Id == id);
     }
+
+    public async Task<ICollection<Order>> GetOrderList()
+    {
+        var orders = await GetListAsync(
+            include: o => o.Include(o => o.Member)
+                .ThenInclude(m => m.User)
+                .Include(o => o.Payment)
+        );
+        return orders;
+    }
+    public async Task<ICollection<Order>> GetOrdersByDate(DateTime? startDate, DateTime? endDate)
+    {
+        var orders = await GetListAsync(
+            predicate: o => startDate == null || o.CreatedAt >= startDate && (endDate == null || o.CreatedAt <= endDate),
+            include: o => o.Include(o => o.Member)
+                .ThenInclude(m => m.User)
+                .Include(o => o.Payment)
+        );
+        return orders;
+    }
 }

@@ -101,7 +101,7 @@ public class OrderService: BaseService<OrderService>, IOrderService
                     _orderItemRepository.UpdateAsync(orderItem);
                     foreach (var lab in product.Labs!)
                     {
-                        var existedLabMember = await _labMemberRepository.GetLabMemberByLabIdAndMemberId(lab.Id, order.MemberId);
+                        var existedLabMember = await _labMemberRepository.GetLabMemberByLabIdAndMemberIdNoInclude(lab.Id, order.MemberId);
                         if (existedLabMember != null)
                         {
                             existedLabMember.NumberOfRequest += 3;
@@ -118,10 +118,8 @@ public class OrderService: BaseService<OrderService>, IOrderService
                         }
                     }
                 }
-                // _unitOfWork.GetRepository<Order>().UpdateAsync(order);
+                
                 _orderRepository.UpdateAsync(order);
-                // var isOrderSuccess = await _orderRepository.SaveChangesAsync();
-                // if (!isOrderSuccess) return null;
                 var isInsertLabMemberSuccess = await _labMemberRepository.SaveChangesAsync();
                 if (!isInsertLabMemberSuccess) return null;
                 transaction.Complete();
@@ -196,6 +194,13 @@ public class OrderService: BaseService<OrderService>, IOrderService
             case OrderStatus.Shipping:
                 order.Status = order.Status = OrderStatus.RefuseReceive;
                 order.ModifiedAt = TimeUtil.GetCurrentSEATime();
+                var orderItems = await _orderItemRepository.GetOrderItemByOrderIdNoInclude(orderId);
+                foreach (var orderItem in orderItems)
+                {
+                    var orderItemProduct = await _productRepository.GetProductByIdAsync(orderItem.ProductId);
+                    orderItemProduct.Quantity += orderItem.Quantity;
+                    _productRepository.UpdateAsync(orderItemProduct);
+                }
                 break;
             default:
                 throw new BadHttpRequestException(MessageConstant.Order.OrderStatusNotFound);

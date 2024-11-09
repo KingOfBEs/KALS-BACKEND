@@ -97,7 +97,6 @@ public class SupportRequestRepository: GenericRepository<SupportRequest>, ISuppo
                 Staff = sr.Staff,
                 Status = sr.Status,
                 CreatedAt = sr.CreatedAt,
-                LabId = sr.LabId,
                 LabMember = sr.LabMember, 
                 ModifiedAt = sr.ModifiedAt,
                 StaffId = sr.StaffId,

@@ -330,7 +330,6 @@ public class ProductService: BaseService<ProductService>, IProductService
                     {
                         foreach (var cartKey in cartKeys)
                         {
-                            bool isUpdated = false;
                             var cartJson = await _redisService.GetStringAsync(cartKey);
                             var cart = JsonConvert.DeserializeObject<List<CartModelResponse>>(cartJson);
                             foreach (var cartItem in cart)
@@ -340,8 +339,7 @@ public class ProductService: BaseService<ProductService>, IProductService
                                     
                                     if (cartItem.Quantity > product.Quantity || product.IsHidden)
                                     {
-                                        await _redisService.RemoveKeyAsync(cartKey);
-                                        await _redisService.RemoveFromListAsync("AllCartKeys", cartKey);
+                                        cart.Remove(cartItem);
                                         break;
                                     }
                                     cartItem.Name = product.Name;
@@ -349,11 +347,14 @@ public class ProductService: BaseService<ProductService>, IProductService
                                     cartItem.Price = product.Price;
                                     cartItem.MainImage = product.ProductImages?.Where(pi => pi.IsMain == true).FirstOrDefault()?.ImageUrl;
                                     cartItem.ProductQuantity = product.Quantity;
-                                    isUpdated = true;
                                 }
                             }
-
-                            if (isUpdated)
+                            if (!cart.Any())
+                            {
+                                await _redisService.RemoveKeyAsync(cartKey);
+                                await _redisService.RemoveFromListAsync("AllCartKeys", cartKey);
+                            }
+                            else
                             {
                                 await _redisService.SetStringAsync(cartKey, JsonConvert.SerializeObject(cart));
                             }

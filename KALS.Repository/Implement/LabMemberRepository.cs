@@ -21,6 +21,13 @@ public class LabMemberRepository: GenericRepository<LabMember>, ILabMemberReposi
         return labMember;
     }
 
+    public async Task<LabMember> GetLabMemberByLabIdAndMemberIdNoInclude(Guid labId, Guid memberId)
+    {
+        return await SingleOrDefaultAsync(
+            predicate: lm => lm.LabId == labId && lm.MemberId == memberId
+        );
+    }
+
     public async Task<ICollection<LabMember>> GetLabMembersByLabIds(List<Guid> labIds)
     {
         var labMembers = await GetListAsync(

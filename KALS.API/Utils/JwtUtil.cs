@@ -13,29 +13,24 @@ public class JwtUtil
     {
         
     }
-    public static string GenerateJwtToken(User user, Tuple<string, Guid> guidClaim, IConfiguration configuration)
-    {
-        JwtSecurityTokenHandler jwtHandler = new JwtSecurityTokenHandler();
-        // byte[] keyBytes = new byte[32];
-        // using (var rng = new RNGCryptoServiceProvider())
-        // {
-        //     rng.GetBytes(keyBytes);
-        // }
-        SymmetricSecurityKey secrectKey = 
-            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]!));;
-        var credentials = new SigningCredentials(secrectKey, SecurityAlgorithms.HmacSha256Signature);
-        List<Claim> claims = new List<Claim>()
+        public static string GenerateJwtToken(User user, Tuple<string, Guid> guidClaim, IConfiguration configuration)
         {
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Sub, user.Username),
-            new Claim(ClaimTypes.Role, user.Role.ToString()),
-        };
-        
-        if(guidClaim != null) claims.Add(new Claim(guidClaim.Item1, guidClaim.Item2.ToString()));
-        var expires = DateTime.Now.AddDays(30);
-        var token = new JwtSecurityToken(configuration["JWT:Issuer"], null, claims, notBefore: DateTime.Now, expires, credentials);
-        return jwtHandler.WriteToken(token);
-    }
+            JwtSecurityTokenHandler jwtHandler = new JwtSecurityTokenHandler();
+            SymmetricSecurityKey secrectKey = 
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]!));;
+            var credentials = new SigningCredentials(secrectKey, SecurityAlgorithms.HmacSha256Signature);
+            List<Claim> claims = new List<Claim>()
+            {
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Username),
+                new Claim(ClaimTypes.Role, user.Role.ToString()),
+            };
+            
+            if(guidClaim != null) claims.Add(new Claim(guidClaim.Item1, guidClaim.Item2.ToString()));
+            var expires = DateTime.Now.AddDays(30);
+            var token = new JwtSecurityToken(configuration["JWT:Issuer"], null, claims, notBefore: DateTime.Now, expires, credentials);
+            return jwtHandler.WriteToken(token);
+        }
 
     public static string GenerateRefreshToken()
     {

@@ -55,4 +55,12 @@ public class WarrantyRequestRepository: GenericRepository<WarrantyRequest>, IWar
         );
         return warrantyRequest;
     }
+
+    public async Task<WarrantyRequest> GetWarrantyRequestByOrderItemId(Guid orderItemId)
+    {
+        var warrantyRequest = await SingleOrDefaultAsync(
+            predicate:wr => wr.OrderItemId == orderItemId
+        );
+        return warrantyRequest;
+    }
 }

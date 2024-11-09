@@ -11,12 +11,20 @@ public class OrderItemRepository: GenericRepository<OrderItem>, IOrderItemReposi
     {
     }
 
-    public Task<ICollection<OrderItem>> GetOrderItemByOrderIdAsync(Guid orderId)
+    public async Task<ICollection<OrderItem>> GetOrderItemByOrderIdAsync(Guid orderId)
     {
-        var orderItem = GetListAsync(
+        var orderItem = await GetListAsync(
             predicate: oi => oi.OrderId == orderId,
             include: oi => oi.Include(oi => oi.Product)
                 .ThenInclude(p => p.ProductImages)
+        );
+        return orderItem;
+    }
+
+    public async Task<ICollection<OrderItem>> GetOrderItemByOrderIdNoInclude(Guid orderId)
+    {
+        var orderItem = await GetListAsync(
+            predicate: oi => oi.OrderId == orderId
         );
         return orderItem;
     }

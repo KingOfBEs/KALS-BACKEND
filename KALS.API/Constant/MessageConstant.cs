@@ -19,10 +19,8 @@ public class MessageConstant
         public const string RoleNotFound = "Role không tồn tại";
         public const string StaffNotFound = "Staff không tồn tại";
         public const string UpdateStaffFail = "Cập nhật staff không thành công";
-        public const string InsertUserFail = "Thêm user không thành công";
         public const string CreateStaffFail = "Tạo staff không thành công";
         public const string StaffIdNotNull = "Id staff không được để trống";
-        public const string UsernameOrPhonenumberNotNull = "Username hoặc số điện thoại không được để trống";
     }
 
     public static class Order
@@ -44,7 +42,6 @@ public class MessageConstant
         public const string ParentProductIdNotNull = "Id của sản phẩm kit không được để trống";
         public const string ChildProductIdNotNull = "Id của sản phẩm con không được để trống";
         public const string ProductOutOfStock = "Sản phẩm đã hết hàng";
-        public const string CreateProductFailed = "Tạo sản phẩm không thành công";
         public const string ProductIsNotKit = "Sản phẩm không phải là Kit";
         public const string PriceMustBeSmallerThanExpectedPrice = "Giá bán phải nhỏ hơn giá dự kiến";
         public const string ProductIsHidden = "Sản phẩm không tồn tại";
@@ -155,5 +152,6 @@ public class MessageConstant
         public const string WarrantyRequestStatusInvalid = "Trạng thái yêu cầu bảo hành không hợp lệ";
         public const string UpdateWarrantyRequestFail = "Cập nhật yêu cầu bảo hành không thành công";
         public const string NotAccessedToWarrantyRequest = "Không có quyền truy cập yêu cầu bảo hành";
+        public const string WarrantyRequestExisted = "Có yêu cầu bảo hành đang chờ xử lý";
     }
 }

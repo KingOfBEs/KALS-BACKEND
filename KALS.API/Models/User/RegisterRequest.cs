@@ -7,8 +7,8 @@ public class RegisterRequest
     [Required]
     public string Username { get; set; }
     [Required]
-    [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
-    [MaxLength(100)]
+    [StringLength(20, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+    [MaxLength(20)]
     public string Password { get; set; }
     [Required]
     public string PhoneNumber { get; set; }

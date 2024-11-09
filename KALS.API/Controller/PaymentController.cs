@@ -31,7 +31,7 @@ namespace KALS.API.Controller;
 ////////////////////////////////////////////////////////////////////
 [ApiController]
 [Route(ApiEndPointConstant.Payment.PaymentEndPoint)]
-public class PaymentController: BaseController<PaymentController>
+public class  PaymentController: BaseController<PaymentController>
 {
     private readonly IPaymentService _paymentService;
     private readonly ICartService _cartService;

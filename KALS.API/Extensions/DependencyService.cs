@@ -1,4 +1,5 @@
 using System.Text;
+using KALS.API.Services;
 using KALS.API.Services.Implement;
 using KALS.API.Services.Interface;
 using KALS.Domain.DataAccess;
@@ -15,11 +16,6 @@ namespace KALS.API.Extensions;
 
 public static class DependencyService
 {
-    // public static IServiceCollection AddUnitOfWork(this IServiceCollection service)
-    // {
-    //     service.AddScoped<IUnitOfWork<KitAndLabDbContext>, UnitOfWork<KitAndLabDbContext>>();
-    //     return service;
-    // }
 
     public static IServiceCollection AddRepositories(this IServiceCollection service)
     {
@@ -82,6 +78,7 @@ public static class DependencyService
         service.AddScoped<IGoogleDriveService, GoogleDriveService>();
         service.AddScoped<IRedisService, RedisService>();
         service.AddScoped<IWarrantyRequestService, WarrantyRequestService>();
+        service.AddScoped<IReportService, ReportService>();
         return service;
     }
 

@@ -240,8 +240,6 @@ public class UserService : BaseService<UserService>, IUserService
         member.User.Username = string.IsNullOrEmpty(request.Username) ? member.User.Username : request.Username;
         member.User.FullName = string.IsNullOrEmpty(request.FullName) ? member.User.FullName : request.FullName;
         
-        // _unitOfWork.GetRepository<Member>().UpdateAsync(member);
-        // var isSuccess = await _unitOfWork.CommitAsync() > 0;
         _memberRepository.UpdateAsync(member);
         var isSuccess = await _memberRepository.SaveChangesAsync();
         UserResponse response = null;

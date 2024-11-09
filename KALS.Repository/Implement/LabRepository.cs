@@ -45,7 +45,7 @@ public class LabRepository: GenericRepository<Lab>, ILabRepository
                 CreatedBy = l.CreatedBy,
                 ModifiedBy = l.ModifiedBy,
                 Url = l.Url,
-                VideoUrl = l.Url,
+                VideoUrl = l.VideoUrl,
                 LabMembers = l.LabMembers,
                 ProductId = l.ProductId,
                 Product = l.Product,

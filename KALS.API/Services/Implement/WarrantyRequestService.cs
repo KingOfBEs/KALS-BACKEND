@@ -66,11 +66,17 @@ public class WarrantyRequestService: BaseService<WarrantyRequestService>, IWarra
         if (orderItem == null) throw new BadHttpRequestException(MessageConstant.OrderItem.OrderItemNotFound);
         if (orderItem.WarrantyExpired < TimeUtil.GetCurrentSEATime())
             throw new BadHttpRequestException(MessageConstant.WarrantyRequest.WarrantyExpired);
+        
         var userId = GetUserIdFromJwt();
         var member = await _memberRepository.GetMemberByUserId(userId);
         if (member == null) throw new BadHttpRequestException(MessageConstant.User.MemberNotFound);
         if (orderItem.Order.MemberId != member.Id)
             throw new BadHttpRequestException(MessageConstant.WarrantyRequest.NotAccessedToWarrantyRequest);
+        var existingWarrantyRequest = await _warrantyRequestRepository.GetWarrantyRequestByOrderItemId(orderItem.Id);
+        if (existingWarrantyRequest != null && existingWarrantyRequest.Status == WarrantyRequestStatus.WaitForResponse)
+        {
+            throw new BadHttpRequestException(MessageConstant.WarrantyRequest.WarrantyRequestExisted);
+        }
         var warrantyRequest = _mapper.Map<WarrantyRequest>(request);
         warrantyRequest.Id = Guid.NewGuid();
         warrantyRequest.Status = WarrantyRequestStatus.WaitForResponse;
